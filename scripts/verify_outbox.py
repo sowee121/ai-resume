@@ -73,9 +73,15 @@ def verify(stem: str, has_jd: bool, outbox: Path | None = None) -> list[str]:
 
     for suffix in forbidden_client:
         found = _find(out, stem, suffix)
-        if found:
-            names = ", ".join(f.name for f in found)
-            errors.append(f"[互斥] 不应存在 {names}（当前为{'JD' if has_jd else '通用'}分支）")
+        if not found:
+            continue
+        # 官方示例可同时保留通用 + JD 两套完整终稿；仅当「另一套不完整」时仍互斥报错
+        other_client = GENERIC_CLIENT if has_jd else JD_CLIENT
+        other_complete = all(_find(out, stem, s) for s in other_client)
+        if other_complete:
+            continue
+        names = ", ".join(f.name for f in found)
+        errors.append(f"[互斥] 不应存在 {names}（当前为{'JD' if has_jd else '通用'}分支）")
 
     if out.exists():
         for f in out.iterdir():

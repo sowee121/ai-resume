@@ -39,6 +39,8 @@ echo "==> 安装依赖 (requirements.txt)"
 
 HAS_CHROME=0
 if [[ -x "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" ]] \
+  || [[ -x "/Applications/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing" ]] \
+  || [[ -x "/Applications/Chromium.app/Contents/MacOS/Chromium" ]] \
   || command -v google-chrome >/dev/null 2>&1 \
   || command -v chromium >/dev/null 2>&1 \
   || command -v chromium-browser >/dev/null 2>&1; then

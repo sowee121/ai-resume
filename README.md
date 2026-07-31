@@ -65,7 +65,39 @@ flowchart TD
 | 无 `<stem>.md`，或 JD 区块为空 | **通用优化** | 优化版简历 + 改动对照 + 优化诊断 |
 | JD 区块非空 | **JD 定制** | 定制版简历 + JD 对照 + 岗位匹配 + 优化诊断 |
 
-同一份简历**不会**同时产出通用版与定制版终稿，避免混淆。
+同一份简历单次运行**只走一条分支**（有 JD → 定制；无 JD → 通用），避免混淆。仓库官方示例 `张三` 为便于对照，**同时保留**两套完整产出。
+
+---
+
+## 示例效果
+
+以下为虚构示例「张三」的真实产出截图（路径均在 [`outbox/`](outbox/)）。长图已限制展示宽度，点击可看原图。
+
+### 优化诊断
+
+原稿六维评分与改进建议（通用 / JD 共用）：
+
+<img src="outbox/张三_review_report.png" width="720" alt="张三 · 简历优化诊断报告" />
+
+### 通用优化 · 改动对照
+
+无 JD 时的改写对照（原文 / 改写 + 说明）：
+
+<img src="outbox/张三_diff.png" width="720" alt="张三 · 通用优化改动对照" />
+
+### JD 定制 · 改动对照
+
+按 mock 岗位定向改写后的对照：
+
+<img src="outbox/张三_diff_jd.png" width="720" alt="张三 · JD 定制改动对照" />
+
+### JD 定制 · 岗位匹配
+
+匹配 / 缺失关键词与下一步建议：
+
+<img src="outbox/张三_jd_report.png" width="720" alt="张三 · 岗位匹配诊断报告" />
+
+对应终稿：[`张三_优化版.docx`](outbox/张三_优化版.docx)（通用）、[`张三_定制版.docx`](outbox/张三_定制版.docx)（JD）。
 
 ---
 
@@ -73,7 +105,7 @@ flowchart TD
 
 - [Cursor](https://cursor.com/)（加载仓库内 `.cursor/skills/`）
 - Python 3.9+
-- Google Chrome / Chromium（报告 PNG；没有则只生成 HTML，需手动截图）
+- Google Chrome / Chromium（报告 PNG 自动截图；没有则只生成 HTML，需手动截图）
 
 依赖见 [`requirements.txt`](requirements.txt)（主要是 `python-docx`、`pymupdf`）。
 
@@ -123,8 +155,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1
 
 ## 快速使用（推荐）
 
-1. 把简历放进 `inbox/`，例如 `inbox/张三.docx`（也支持 `.pdf`，回写精度不如 Word）  
-2. （可选）复制 [`inbox/_template.md`](inbox/_template.md) → `inbox/张三.md`，粘贴目标 JD / 额外要求  
+1. 把简历放进 `inbox/`（仓库已带虚构示例 `inbox/张三.docx`，可直接说「简历优化」试用；也支持 `.pdf`，回写精度不如 Word）  
+2. （可选）复制 [`inbox/_template.md`](inbox/_template.md) → `inbox/<姓名>.md`，或参考示例 [`inbox/张三.md`](inbox/张三.md)，粘贴目标 JD / 额外要求  
 3. 在 Cursor 对话输入：
 
 ```text
@@ -133,7 +165,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1
 
 或使用命令 **`/resume`**。
 
-Agent 会按 [`.cursor/skills/resume-optimize/SKILL.md`](.cursor/skills/resume-optimize/SKILL.md) **自动完成全流程**，并在结束后给出 `outbox/` 路径。多份未优化简历时会列出选项供你选择。
+Agent 会按 [`.cursor/skills/resume-optimize/SKILL.md`](.cursor/skills/resume-optimize/SKILL.md) **自动完成全流程**，并在结束后给出 `outbox/` 路径。多份未优化简历时会列出选项供你选择。官方示例同时提供通用与 JD 两套产出：`outbox/张三_优化版.docx`、`outbox/张三_定制版.docx` 及对应报告。
 
 ### 怎样算「未优化」
 
@@ -151,6 +183,11 @@ Agent 会按 [`.cursor/skills/resume-optimize/SKILL.md`](.cursor/skills/resume-o
 | `<stem>.docx` / `<stem>.pdf` | 是 | 原简历；**不要覆盖原件**，优化稿写到 outbox |
 | `<stem>.md` | 否 | JD + 额外要求 + 可选六维开关；无文件或 JD 留空 → 走通用分支 |
 | [`_template.md`](inbox/_template.md) | 模板 | 复制改名使用（含六维默认全开） |
+| [`张三.docx`](inbox/张三.docx) / [`张三.md`](inbox/张三.md) | 官方示例 | 虚构履历 + mock JD；`outbox` 同时含通用优化版与 JD 定制版全套报告 |
+
+### 官方示例说明
+
+`张三` 为**虚构履历样例**（非真实个人经历）：约五年前端；工作经历示例公司为国内互联网头部四家（字节跳动、阿里巴巴、腾讯、百度）。**版式**：对齐两页母版槽位。项目块五段（青柠闪送 / 仓脉 / 星轨投放 / 云工单 / 学知堂；主栈 uni-app / Vue2 / React / Vue3 / Electron）。`inbox/张三.md` 含 mock JD（对话里跑优化默认走 JD 分支）。**示例产出双套齐全**：通用 `_优化版` + `_diff`；JD `_定制版` + `_diff_jd` + `_jd_report`；共用 `_review_report`。两套均完整时 `verify_outbox` 放宽互斥，便于对照演示。
 
 ### `<stem>.md` 区块
 
@@ -298,7 +335,7 @@ python scripts/verify_outbox.py --stem "张三"
 ## 限制与注意
 
 - **优先 Word（.docx）**；PDF 抽段/回写仅尽力而为，复杂版式可能偏差  
-- PNG 依赖本机 Chrome；无界面环境需自备 Chromium 或只使用 HTML  
+- PNG 依赖本机 Chrome；截图进程隔离 HOME/profile，尽量减少 macOS 崩溃弹窗；无 Chrome 时仅 HTML  
 - 本仓库**不负责换模板/重排版**；需要换模板请另寻工具  
 - 开源仓库勿提交含隐私的真实简历（已 ignore 个人 `inbox` 文件、`outbox/*`、`jsons/*`）
 
@@ -308,9 +345,9 @@ python scripts/verify_outbox.py --stem "张三"
 
 ```text
 AI Resume/
-  inbox/                 # 原件 + 配置（个人稿默认不入库）
+  inbox/                 # 原件 + 配置（个人稿默认不入库；张三示例入库）
   jsons/                 # 中间 JSON（不入库）
-  outbox/                # 最终产出 + HTML 预览（不入库）
+  outbox/                # 最终产出 + HTML 预览（个人稿不入库；张三示例入库）
   scripts/               # 管道脚本
   prompts/               # 提示词（默认前端）
   templates/             # 报告 HTML

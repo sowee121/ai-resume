@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
-"""Shared HTML → PNG capture helpers (Chrome print-to-PDF, single tall page)."""
+"""Shared HTML → PNG capture helpers (Chrome print-to-PDF, single tall page).
+
+自动截图仍用本机 Chrome/Chromium；启动时隔离 HOME + user-data-dir，
+尽量减少 macOS「意外退出」弹窗（不额外下载上百 MB 浏览器）。
+"""
 
 from __future__ import annotations
 
+import os
 import re
 import shutil
 import subprocess
@@ -10,18 +15,23 @@ import tempfile
 from pathlib import Path
 from urllib.parse import quote
 
+ROOT = Path(__file__).resolve().parents[1]
+
 CHROME_PATHS = [
-    # 优先独立浏览器，减少与日常 Google Chrome 抢配置/弹崩溃窗
     "/Applications/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing",
     "/Applications/Chromium.app/Contents/MacOS/Chromium",
     shutil.which("chromium") or "",
     shutil.which("chromium-browser") or "",
     "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
     shutil.which("google-chrome") or "",
+    shutil.which("google-chrome-stable") or "",
 ]
 
 
 def find_chrome() -> str | None:
+    env = (os.environ.get("AI_RESUME_CHROME") or os.environ.get("CHROME_PATH") or "").strip()
+    if env and Path(env).exists():
+        return env
     for p in CHROME_PATHS:
         if p and Path(p).exists():
             return p
@@ -36,7 +46,7 @@ def favicon_link_html(root: Path | None = None, *, name: str = "favicon.svg") ->
       - favicon-jd.svg    — jd（靛蓝→紫→青，对齐岗位匹配页头高分渐变）
       - favicon-diff.svg — diff（青绿→蓝，对齐对照页头）
     """
-    base = root or Path(__file__).resolve().parents[1]
+    base = root or ROOT
     svg_path = base / "templates" / name
     if not svg_path.exists():
         return ""
@@ -46,17 +56,12 @@ def favicon_link_html(root: Path | None = None, *, name: str = "favicon.svg") ->
 
 
 def estimate_page_height(html: str) -> int:
-    """Estimate required single-page height in CSS px (upper bound, later cropped).
-
-    Prefer one tall page over multi-page stitching — pagination + break-inside
-    avoid often causes clipped pairs and fake bottom whitespace.
-    """
+    """Estimate required single-page height in CSS px (upper bound, later cropped)."""
     n_pair = html.count('class="pair"')
     n_section = html.count('class="section-card"')
     if n_pair:
         note_bonus = html.count('class="pair-note"') * 32
         score_bonus = 140 if "score-strip" in html else 0
-        # pair ≈ label + del + add + note；偏松估算，靠底部裁切收掉多余空白
         return min(
             50000,
             max(2200, 320 + score_bonus + n_section * 72 + n_pair * 168 + note_bonus),
@@ -77,8 +82,6 @@ def estimate_page_height(html: str) -> int:
 
 
 def inject_capture_page_size(html: str, height_px: int) -> str:
-    # Only enlarge the print page. Do NOT set min-height on body —
-    # that stretches the gradient background and creates fake bottom padding.
     style = f"""
 <style id="capture-page-size">
   @page {{ size: 750px {height_px}px; margin: 0; }}
@@ -100,7 +103,6 @@ def _pixel_rgb(pix, x: int, y: int) -> tuple[int, int, int]:
 
 
 def _row_stats(pix, y: int, samples: int = 24) -> tuple[tuple[int, int, int], int]:
-    """Return (avg_rgb, max_channel_spread) for a horizontal sample of the row."""
     step = max(1, pix.width // samples)
     rs = gs = bs = 0
     n = 0
@@ -128,7 +130,6 @@ def _is_blank_row(
     spread: int,
     backgrounds: list[tuple[int, int, int]],
 ) -> bool:
-    """Uniform row close to any known page/body background → empty padding."""
     if spread >= 10:
         return False
     return any(_color_dist(avg, bg) < 22 for bg in backgrounds)
@@ -146,7 +147,6 @@ def _crop_to_height(pix, bottom: int):
 
 
 def _detect_body_padding_bottom(html: str) -> int:
-    """CSS px padding-bottom on body — used to keep PNG bottom margin consistent."""
     m = re.search(r"body\s*\{[^}]*?padding-bottom:\s*(\d+)px", html, re.S)
     if m:
         return max(0, int(m.group(1)))
@@ -154,16 +154,10 @@ def _detect_body_padding_bottom(html: str) -> int:
 
 
 def _trim_bottom_padding(pix, pad: int = 21):
-    """
-    Crop trailing page padding, preserving ~body padding-bottom.
-
-    Empty region may be pure white (PDF page) or soft body bg (#f6f8fa etc.),
-    so match against several background samples from the bottom of the image.
-    """
     backgrounds: list[tuple[int, int, int]] = [
         (255, 255, 255),
-        (246, 248, 250),  # diff body
-        (238, 242, 255),  # review/jd
+        (246, 248, 250),
+        (238, 242, 255),
         (253, 244, 255),
         (255, 247, 237),
     ]
@@ -184,6 +178,78 @@ def _trim_bottom_padding(pix, pad: int = 21):
     return _crop_to_height(pix, bottom)
 
 
+def _isolated_env(td: Path) -> dict[str, str]:
+    """Fake HOME，避免 Crashpad 写入真实用户目录触发系统弹窗。"""
+    env = os.environ.copy()
+    home = td / "home"
+    home.mkdir(parents=True, exist_ok=True)
+    env["HOME"] = str(home)
+    env["XDG_CONFIG_HOME"] = str(home / ".config")
+    env["XDG_CACHE_HOME"] = str(home / ".cache")
+    env["XDG_DATA_HOME"] = str(home / ".local" / "share")
+    env["CHROME_HEADLESS"] = "1"
+    env["BREAKPAD_DUMP_LOCATION"] = str(td / "breakpad")
+    return env
+
+
+def _run_chrome_pdf(chrome: str, url: str, pdf_path: Path, td: Path) -> None:
+    crash_dir = td / "crashes"
+    crash_dir.mkdir(parents=True, exist_ok=True)
+    env = _isolated_env(td)
+
+    # 说明：macOS 上给本机 Google Chrome 加 --user-data-dir 临时目录容易卡住；
+    # 只用隔离 HOME + crash-dumps-dir，既自动截图，又尽量少弹「意外退出」。
+    attempts = [
+        [
+            chrome,
+            "--headless=new",
+            f"--crash-dumps-dir={crash_dir}",
+            "--disable-crash-reporter",
+            "--disable-breakpad",
+            "--disable-gpu",
+            "--disable-dev-shm-usage",
+            "--no-first-run",
+            "--no-default-browser-check",
+            "--no-sandbox",
+            f"--print-to-pdf={pdf_path}",
+            "--no-pdf-header-footer",
+            url,
+        ],
+        [
+            chrome,
+            "--headless",
+            f"--crash-dumps-dir={crash_dir}",
+            "--disable-crash-reporter",
+            "--disable-breakpad",
+            "--disable-gpu",
+            "--no-first-run",
+            "--no-sandbox",
+            f"--print-to-pdf={pdf_path}",
+            "--no-pdf-header-footer",
+            url,
+        ],
+    ]
+
+    last_err: Exception | None = None
+    for cmd in attempts:
+        try:
+            subprocess.run(
+                cmd,
+                check=True,
+                capture_output=True,
+                timeout=90,
+                env=env,
+                start_new_session=True,
+            )
+            if pdf_path.exists() and pdf_path.stat().st_size >= 100:
+                return
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
+            last_err = e
+            continue
+
+    raise RuntimeError(f"Chrome 截图失败: {last_err}")
+
+
 def html_to_png(html_path: Path, png_path: Path, *, scale: float = 1.5) -> bool:
     """Render local HTML file to a single long PNG, cropped to content."""
     import fitz
@@ -201,55 +267,21 @@ def html_to_png(html_path: Path, png_path: Path, *, scale: float = 1.5) -> bool:
 
     png_path.parent.mkdir(parents=True, exist_ok=True)
 
-    with tempfile.TemporaryDirectory() as td:
-        prep_html = Path(td) / "capture.html"
-        prep_pdf = Path(td) / "capture.pdf"
-        crash_dir = Path(td) / "chrome-crashes"
-        crash_dir.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="ai-resume-capture-") as td_str:
+        td = Path(td_str)
+        prep_html = td / "capture.html"
+        prep_pdf = td / "capture.pdf"
         prep_html.write_text(prepared, encoding="utf-8")
         url = prep_html.resolve().as_uri()
 
-        # 说明：macOS 上给本机 Google Chrome 加 --user-data-dir 临时目录容易卡住；
-        # 这里只用独立 crash-dumps-dir + 关闭崩溃上报，减少「意外退出」系统弹窗。
-        cmd = [
-            chrome,
-            "--headless=new",
-            f"--crash-dumps-dir={crash_dir}",
-            "--disable-crash-reporter",
-            "--disable-breakpad",
-            "--disable-gpu",
-            "--disable-dev-shm-usage",
-            "--no-first-run",
-            "--no-default-browser-check",
-            "--no-sandbox",
-            f"--print-to-pdf={prep_pdf}",
-            "--no-pdf-header-footer",
-            url,
-        ]
         try:
-            subprocess.run(cmd, check=True, capture_output=True, timeout=90)
-        except subprocess.TimeoutExpired:
-            print("[warn] Chrome 截图超时。可手动在浏览器中打开 HTML 截屏。")
+            _run_chrome_pdf(chrome, url, prep_pdf, td)
+        except RuntimeError as e:
+            print(f"[warn] {e}。可手动在浏览器中打开 HTML 截屏。")
             return False
-        except subprocess.CalledProcessError as e:
-            cmd_old = [
-                chrome,
-                "--headless",
-                f"--crash-dumps-dir={crash_dir}",
-                "--disable-crash-reporter",
-                "--disable-breakpad",
-                "--disable-gpu",
-                "--no-first-run",
-                "--no-sandbox",
-                f"--print-to-pdf={prep_pdf}",
-                "--no-pdf-header-footer",
-                url,
-            ]
-            try:
-                subprocess.run(cmd_old, check=True, capture_output=True, timeout=90)
-            except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e2:
-                print(f"[warn] Chrome 截图失败: {e2}。可手动在浏览器中打开 HTML 截屏。")
-                return False
+        except Exception as e:  # noqa: BLE001
+            print(f"[warn] Chrome 截图异常: {e}。可手动在浏览器中打开 HTML 截屏。")
+            return False
 
         if not prep_pdf.exists() or prep_pdf.stat().st_size < 100:
             print("[warn] Chrome 未生成有效 PDF。")

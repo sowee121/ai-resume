@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=750" />
+  <title>JD 匹配报告</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%20%3Cdefs%3E%20%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%234f46e5%22%2F%3E%20%3Cstop%20offset%3D%2250%25%22%20stop-color%3D%22%237c3aed%22%2F%3E%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%2306b6d4%22%2F%3E%20%3C%2FlinearGradient%3E%20%3C%2Fdefs%3E%20%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%228%22%20fill%3D%22url%28%23g%29%22%2F%3E%20%3Crect%20x%3D%228%22%20y%3D%226.5%22%20width%3D%2216%22%20height%3D%2219%22%20rx%3D%222.5%22%20fill%3D%22%23fff%22%2F%3E%20%3Crect%20x%3D%2211%22%20y%3D%2210%22%20width%3D%2210%22%20height%3D%222%22%20rx%3D%221%22%20fill%3D%22%234f46e5%22%2F%3E%20%3Crect%20x%3D%2211%22%20y%3D%2214.5%22%20width%3D%2210%22%20height%3D%222%22%20rx%3D%221%22%20fill%3D%22%237c3aed%22%2F%3E%20%3Crect%20x%3D%2211%22%20y%3D%2219%22%20width%3D%226.5%22%20height%3D%222%22%20rx%3D%221%22%20fill%3D%22%2306b6d4%22%2F%3E%20%3C%2Fsvg%3E" />
+  <style>
+    @page { margin: 0; }
+    @media print { html, body { width: 750px; } }
+    html, body { overflow: visible !important; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html {
+      background: linear-gradient(165deg, #eef2ff 0%, #fdf4ff 45%, #fff7ed 100%);
+    }
+    body {
+      width: 750px;
+      margin: 0 auto;
+      font-family: "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+      background: linear-gradient(165deg, #eef2ff 0%, #fdf4ff 45%, #fff7ed 100%);
+      color: #1e1b4b;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* 边距规范：hero / content 水平 20px 对齐；容器内边距四向等值 */
+    .hero {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #06b6d4 100%);
+      padding: 20px;
+      color: #fff;
+      border-radius: 0 0 28px 28px;
+    }
+    .hero-top {
+      display: none;
+    }
+    .score-label {
+      flex: 0 0 auto;
+      align-self: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      background: rgba(255,255,255,0.22);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 13px;
+      padding: 4px 12px;
+      line-height: 1.3;
+    }
+    .hero-score-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 18px;
+      margin-bottom: 16px;
+    }
+    .score-mark {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: baseline;
+      gap: 3px;
+      line-height: 0.9;
+    }
+    .score-num {
+      font-family: "Avenir Next Condensed", "Arial Narrow", "Helvetica Neue", "PingFang SC", sans-serif;
+      font-size: 68px;
+      font-weight: 700;
+      letter-spacing: -0.045em;
+      font-variant-numeric: tabular-nums;
+      color: #fff;
+      text-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    }
+    .score-unit {
+      font-size: 15px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.8);
+      transform: translateY(-6px);
+    }
+    .hero-titles {
+      flex: 1 1 auto;
+      min-width: 0;
+      padding-bottom: 8px;
+    }
+    .hero h1 {
+      font-size: 22px;
+      font-weight: 800;
+      line-height: 1.25;
+      margin-bottom: 4px;
+    }
+    .hero-sub {
+      font-size: 13px;
+      color: rgba(255,255,255,0.8);
+      line-height: 1.45;
+    }
+    .score-rail {
+      height: 6px;
+      background: rgba(255,255,255,0.22);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .score-rail-fill {
+      height: 100%;
+      width: 88%;
+      background: #fff;
+      border-radius: 999px;
+      box-shadow: 0 0 12px rgba(255,255,255,0.45);
+    }
+
+    .content {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .card {
+      border-radius: 20px;
+      padding: 20px;
+    }
+    .card-hit {
+      background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+      border: 1px solid #a7f3d0;
+    }
+    .card-miss {
+      background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+      border: 1px solid #fed7aa;
+    }
+    .card-warn {
+      background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+      border: 1px solid #c7d2fe;
+    }
+    .card-action {
+      background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+      border: 1px solid #bfdbfe;
+    }
+
+    .card-head {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .card-icon {
+      width: 36px;
+      height: 36px;
+      line-height: 36px;
+      text-align: center;
+      border-radius: 10px;
+      font-size: 18px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .icon-hit { background: #10b981; color: #fff; }
+    .icon-miss { background: #f59e0b; color: #fff; }
+    .icon-warn { background: #6366f1; color: #fff; }
+    .icon-action { background: #3b82f6; color: #fff; }
+
+    .card-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #1e293b;
+      line-height: 1.3;
+    }
+    .card-desc {
+      font-size: 12px;
+      color: #64748b;
+      margin-top: 2px;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .tag {
+      display: inline-block;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 20px;
+      color: #fff;
+    }
+    .tag-hit {
+      background: #059669;
+      box-shadow: 0 2px 8px rgba(5,150,105,0.25);
+    }
+    .tag-miss {
+      background: #d97706;
+      box-shadow: 0 2px 8px rgba(217,119,6,0.2);
+    }
+    .tag-empty {
+      background: rgba(0,0,0,0.06);
+      color: #94a3b8;
+      font-weight: 500;
+    }
+
+    .list {
+      list-style: none;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .list li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      line-height: 1.7;
+      color: #334155;
+      padding: 12px;
+      background: rgba(255,255,255,0.7);
+      border-radius: 12px;
+    }
+    .list li::before {
+      content: "\203A";
+      flex: 0 0 auto;
+      font-size: 18px;
+      line-height: 1;
+      font-weight: 700;
+    }
+    .card-warn .list li::before { color: #6366f1; }
+    .card-action .list li::before { color: #2563eb; }
+  </style>
+</head>
+<body>
+  <div class="hero">
+    <div class="hero-score-row">
+      <div class="score-mark">
+        <span class="score-num">88</span>
+        <span class="score-unit">分</span>
+      </div>
+      <div class="hero-titles">
+        <h1>岗位匹配诊断</h1>
+        <div class="hero-sub">张三.docx · 岗位匹配诊断报告</div>
+      </div>
+      <span class="score-label">匹配度高</span>
+    </div>
+    <div class="score-rail" aria-hidden="true">
+      <div class="score-rail-fill"></div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="card card-hit">
+      <div class="card-head">
+        <span class="card-icon icon-hit">✓</span>
+        <div>
+          <div class="card-title">匹配关键词</div>
+          <div class="card-desc">与目标岗位高度契合的技能与能力</div>
+        </div>
+      </div>
+      <div class="tags"><span class="tag tag-hit">TypeScript</span>
+        <span class="tag tag-hit">JavaScript</span>
+        <span class="tag tag-hit">React</span>
+        <span class="tag tag-hit">Vue / Vue3</span>
+        <span class="tag tag-hit">uni-app</span>
+        <span class="tag tag-hit">微信小程序</span>
+        <span class="tag tag-hit">Vite</span>
+        <span class="tag tag-hit">Webpack</span>
+        <span class="tag tag-hit">pnpm</span>
+        <span class="tag tag-hit">ESLint</span>
+        <span class="tag tag-hit">Vitest</span>
+        <span class="tag tag-hit">Playwright</span>
+        <span class="tag tag-hit">ECharts</span>
+        <span class="tag tag-hit">WebSocket</span>
+        <span class="tag tag-hit">SSE</span>
+        <span class="tag tag-hit">Electron</span>
+        <span class="tag tag-hit">CI/CD</span>
+        <span class="tag tag-hit">弱网 / 性能优化</span>
+        <span class="tag tag-hit">中后台 / 复杂表格</span>
+        <span class="tag tag-hit">投放 / 数据看板</span></div>
+    </div>
+
+    <div class="card card-miss">
+      <div class="card-head">
+        <span class="card-icon icon-miss">✦</span>
+        <div>
+          <div class="card-title">缺失关键词</div>
+          <div class="card-desc">岗位要求但简历尚未充分覆盖的关键词</div>
+        </div>
+      </div>
+      <div class="tags"><span class="tag tag-miss">微前端（qiankun / Module Federation）</span>
+        <span class="tag tag-miss">Next.js</span></div>
+    </div>
+
+    <div class="card card-warn">
+      <div class="card-head">
+        <span class="card-icon icon-warn">★</span>
+        <div>
+          <div class="card-title">优化建议</div>
+          <div class="card-desc">建议优先补强与调整的表述</div>
+        </div>
+      </div>
+      <ul class="list"><li>JD 加分项「微前端」在全文（含项目技术栈）无依据，勿在简历中编造</li>
+        <li>常见但非强制的 Next.js 未出现；若目标岗强依赖需另评估</li>
+        <li>查询取消已在星轨投放职责体现，通信行已侧写实时能力</li></ul>
+    </div>
+
+    <div class="card card-action">
+      <div class="card-head">
+        <span class="card-icon icon-action">→</span>
+        <div>
+          <div class="card-title">下一步行动</div>
+          <div class="card-desc">投递前建议完成的事项</div>
+        </div>
+      </div>
+      <ul class="list"><li>投递前确认是否接受无微前端经验（加分项）</li>
+        <li>面试重点：uni-app 分包、虚拟列表、Pinia、Electron IPC、投放漏斗下钻</li>
+        <li>如强依赖微前端，可补学习项目后再投（勿虚构线上经历）</li></ul>
+    </div>
+  </div>
+</body>
+</html>

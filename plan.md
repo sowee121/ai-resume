@@ -206,7 +206,15 @@ Skill 权威步骤：[`.cursor/skills/resume-optimize/SKILL.md`](.cursor/skills/
 9. **产出目录与项目定型** — jsons/、中文简历文件名、开源、项目名「AI 简历」；`install.sh` / `install.bat`+`install.ps1` 一键装依赖  
 10. **技能回填过滤冷门技术** — 项目栈不一律灌进专业技能；模型按热门前端 JD 判断是否回填，冷门库留在项目技术栈
 11. **通用文案原则沉淀** — 从个人改简历实践中精选可复用通则写入 prompts（背景/职责分工、「所以呢」、起句勿同质、可感知结果、优势写事实）；诊断补证据/红旗意识；非整包移植个人模板  
-12. **六维开关并入配置模板** — 删除 `optimization_defaults.yaml`；默认全开写入 `_template.md`「六维优化」段，由 `parse_inbox_config.py` 输出 `dimensions`
+12. **六维开关并入配置模板** — 删除 `optimization_defaults.yaml`；默认全开写入 `_template.md`「六维优化」段，由 `parse_inbox_config.py` 输出 `dimensions`  
+13. **官方示例张三** — `inbox/张三.docx` + mock JD 的 `张三.md`；走 JD 定制分支；`outbox` 定制版 / diff_jd / jd_report / review 入库
+14. **张三示例全文推倒重写** — 技能/任职/项目/优势全部新写，仅保留母版版式与行数槽位
+15. **云工单单端 + 学知堂 Electron** — 云工单固定 Web 一端；学知堂 Electron 桌面端
+16. **清理示例生成脚本** — 删除一次性 `build_sample_zhangsan.py`
+17. **截图隔离兜底** — 仍用本机 Chrome 自动出 PNG；隔离 HOME + crash-dumps
+18. **张三示例切 JD 分支** — md 写入 mock 资深前端 JD；产出定制版与岗位匹配报告
+19. **张三示例双套并存** — 再补通用优化版；`verify_outbox` 在两套终稿均完整时放宽互斥，便于官方示例对照
+20. **README 示例图** — 引入 `outbox` 四张 PNG（review / diff / diff_jd / jd_report）作效果展示
 
 ---
 
@@ -215,7 +223,7 @@ Skill 权威步骤：[`.cursor/skills/resume-optimize/SKILL.md`](.cursor/skills/
 ### 已知问题
 
 1. PDF 源回写不精确，复杂版式易偏差 → **优先使用 docx 源文件**  
-2. PNG 依赖本机 Chrome；无 Chrome 时仅 HTML  
+2. PNG 依赖本机 Chrome；截图用隔离 profile，尽量减少崩溃弹窗；无 Chrome 时仅 HTML  
 3. 对照/报告文件名仍有 `_diff` / `_review_report` 等英文后缀（简历文件名已中文化）  
 
 ### 后续可做
@@ -223,7 +231,7 @@ Skill 权威步骤：[`.cursor/skills/resume-optimize/SKILL.md`](.cursor/skills/
 1. 报告视觉与信息密度按反馈迭代  
 2. Skill 支持更顺畅的批量多份  
 3. （已落地）`<stem>.md` / `_template.md` 的「六维优化」段覆盖单项开关  
-4. 官方示例 `fixtures/` 脱敏样例简历  
+4. （已落地）官方示例 `inbox/张三.*` + `outbox/张三_*`（虚构；mock JD；通用优化版与 JD 定制版双套示例）  
 5. 按需提供 backend 等提示词包示例  
 
 ---
