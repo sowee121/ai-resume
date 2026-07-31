@@ -1,0 +1,8 @@
+# 六维优化默认开关（仓库级，客户无需编辑）
+dimensions:
+  ats_keywords: true      # ATS 关键词
+  structure: true         # 结构优化（轻量：bullet/字段顺序微调）
+  quantification: true    # 量化表述
+  skill_matching: true    # 技能匹配
+  language: true          # 语言表达
+  highlights: true        # 亮点提炼

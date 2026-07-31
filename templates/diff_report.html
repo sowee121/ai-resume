@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=750" />
+  <title>简历改动对比</title>
+  {{favicon_link}}
+  <style>
+    @page { margin: 0; }
+    @media print { html, body { width: 750px; } }
+    html, body { overflow: visible !important; }
+    .section-card, .subsection, .pair { break-inside: avoid; page-break-inside: avoid; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink: #0f3f3a;
+      --ink-soft: #3d5c58;
+      --line: #b6e2dc;
+      --line-soft: #d7efeb;
+      --surface: rgba(255, 255, 255, 0.82);
+      --surface-strong: #ffffff;
+      --teal: #0f766e;
+      --cyan: #0891b2;
+      --blue: #2563eb;
+      --chip: #ecfeff;
+      --chip-ink: #0e7490;
+      --del-bg: #ffe4e1;
+      --del-ink: #9f1239;
+      --add-bg: #d1fae5;
+      --add-ink: #065f46;
+      --note: #5b7a76;
+      --page: linear-gradient(165deg, #e6fffa 0%, #ecfeff 42%, #eff6ff 100%);
+      --hero: linear-gradient(135deg, #0f766e 0%, #0891b2 55%, #2563eb 100%);
+      --head: linear-gradient(90deg, #ccfbf1 0%, #cffafe 55%, #dbeafe 100%);
+      --radius: 18px;
+      --radius-sm: 12px;
+    }
+
+    html { background: var(--page); }
+    body {
+      width: 750px;
+      margin: 0 auto;
+      font-family: -apple-system, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+      background: var(--page);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .hero {
+      background: var(--hero);
+      padding: 20px;
+      color: #fff;
+      border-radius: 0 0 28px 28px;
+    }
+    .hero-badge {
+      display: none;
+    }
+    .hero h1 {
+      font-size: 22px;
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 6px;
+    }
+    .hero-sub {
+      font-size: 13px;
+      opacity: 0.88;
+      line-height: 1.5;
+    }
+    .hero-note {
+      margin-top: 10px;
+      font-size: 12px;
+      line-height: 1.5;
+      background: rgba(255,255,255,0.14);
+      border: 1px solid rgba(255,255,255,0.22);
+      border-radius: 10px;
+      padding: 10px;
+    }
+
+    .score-strip {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255,255,255,0.22);
+    }
+    .score-top {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .score-main-wrap {
+      flex: 0 0 168px;
+      padding-right: 14px;
+      border-right: 1px solid rgba(255,255,255,0.2);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .score-kicker {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.6px;
+      opacity: 0.72;
+      margin-bottom: 4px;
+    }
+    .score-main {
+      display: flex;
+      align-items: baseline;
+      gap: 5px;
+      line-height: 1;
+    }
+    .score-compare {
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+      line-height: 1;
+      flex-wrap: wrap;
+    }
+    .score-before {
+      font-size: 26px;
+      font-weight: 700;
+      opacity: 0.72;
+      letter-spacing: -0.5px;
+    }
+    .score-arrow {
+      font-size: 18px;
+      font-weight: 600;
+      opacity: 0.55;
+      margin: 0 1px;
+    }
+    .score-now {
+      font-size: 38px;
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
+    .score-unit {
+      font-size: 14px;
+      font-weight: 600;
+      opacity: 0.8;
+    }
+    .score-delta {
+      font-size: 13px;
+      font-weight: 700;
+      opacity: 0.95;
+      margin-left: 2px;
+    }
+    .score-delta.flat { opacity: 0.55; }
+    .score-dims {
+      flex: 1 1 auto;
+      display: flex;
+      align-items: center;
+      min-width: 0;
+    }
+    .dim-chip {
+      flex: 1 1 0;
+      min-width: 0;
+      padding: 0 6px;
+      border-right: 1px solid rgba(255,255,255,0.16);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .dim-chip:last-child { border-right: none; }
+    .dim-chip .n {
+      display: block;
+      font-size: 13px;
+      opacity: 0.68;
+      margin-bottom: 2px;
+      letter-spacing: 0.2px;
+      white-space: nowrap;
+    }
+    .dim-chip .vals {
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 2px;
+      line-height: 1.2;
+    }
+    .dim-chip .b {
+      font-size: 14px;
+      font-weight: 600;
+      opacity: 0.65;
+    }
+    .dim-chip .arr {
+      font-size: 12px;
+      font-weight: 600;
+      opacity: 0.5;
+      margin: 0 1px;
+    }
+    .dim-chip .s {
+      font-size: 17px;
+      font-weight: 700;
+    }
+    .dim-chip .d {
+      display: none;
+    }
+    .score-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+    .score-tag {
+      font-size: 12px;
+      line-height: 1.3;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.14);
+      border: 1px solid rgba(255,255,255,0.26);
+      color: #fff;
+    }
+
+    .content {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .section-card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: linear-gradient(180deg, #ffffff 0%, #f0fdfa 100%);
+    }
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: var(--head);
+      border-bottom: 1px solid var(--line-soft);
+      padding: 14px;
+    }
+    .section-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--teal);
+    }
+    .section-count {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--chip-ink);
+      background: var(--chip);
+      border-radius: 999px;
+      padding: 3px 9px;
+    }
+
+    .subsection {
+      border-bottom: 1px solid var(--line-soft);
+    }
+    .subsection:last-child { border-bottom: none; }
+    .subsection-head {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 12px 12px 0;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--cyan);
+    }
+    .subsection-head::before {
+      content: "";
+      width: 3px;
+      height: 12px;
+      border-radius: 2px;
+      background: linear-gradient(180deg, var(--teal), var(--cyan));
+      flex: 0 0 auto;
+    }
+
+    .pair {
+      margin: 12px;
+      border: 1px solid var(--line-soft);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      background: var(--surface-strong);
+    }
+    .pair-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink-soft);
+      background: linear-gradient(90deg, #f0fdfa 0%, #ecfeff 100%);
+      border-bottom: 1px solid var(--line-soft);
+      padding: 8px;
+    }
+
+    .line {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      align-items: start;
+      gap: 2px;
+      font-size: 13px;
+      line-height: 1.55;
+      padding: 8px 12px;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
+    }
+    .mark {
+      text-align: center;
+      font-weight: 700;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      user-select: none;
+      line-height: 1.55;
+    }
+    .line-del {
+      background: var(--del-bg);
+      color: var(--del-ink);
+    }
+    .line-del .mark { color: #e11d48; }
+    .line-add {
+      background: var(--add-bg);
+      color: var(--add-ink);
+    }
+    .line-add .mark { color: #059669; }
+
+    .pair-note {
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--note);
+      background: linear-gradient(90deg, #f8fffd 0%, #f5fcff 100%);
+      border-top: 1px solid var(--line-soft);
+      padding: 8px;
+    }
+    .pair-note-label {
+      font-weight: 400;
+      color: #6b8f8a;
+    }
+  </style>
+</head>
+<body>
+  <div class="hero">
+    <h1>{{title}}</h1>
+    <div class="hero-sub">{{meta}}</div>
+    {{pdf_note}}
+    {{score_panel}}
+  </div>
+
+  <div class="content">
+    {{items}}
+  </div>
+</body>
+</html>

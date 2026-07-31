@@ -1,0 +1,17 @@
+.venv/
+__pycache__/
+*.py[cod]
+.env
+.DS_Store
+inbox/*
+!inbox/.gitkeep
+!inbox/_template.md
+!inbox/optimization_defaults.yaml
+outbox/*
+!outbox/.gitkeep
+jsons/*
+!jsons/.gitkeep
+*.docx
+*.pdf
+!fixtures/**/*.docx
+!fixtures/**/*.pdf
