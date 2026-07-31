@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Parse inbox/<stem>.md into JD and extra requirements sections."""
+"""Parse inbox/<stem>.md into JD, requirements, and dimension switches."""
 
 from __future__ import annotations
 
@@ -12,6 +12,22 @@ ROOT = Path(__file__).resolve().parents[1]
 
 JD_HEADERS = ("职位描述（JD）", "职位描述", "JD")
 REQ_HEADERS = ("额外要求", "其他要求")
+DIM_HEADERS = ("六维优化", "六维", "优化维度")
+
+DEFAULT_DIMENSIONS: dict[str, bool] = {
+    "ats_keywords": True,
+    "structure": True,
+    "quantification": True,
+    "skill_matching": True,
+    "language": True,
+    "highlights": True,
+}
+
+_BOOL = {"true": True, "yes": True, "1": True, "false": False, "no": False, "0": False}
+_DIM_LINE = re.compile(
+    r"^\s*[-*]?\s*(ats_keywords|structure|quantification|skill_matching|language|highlights)\s*:\s*(\w+)",
+    re.I,
+)
 
 
 def _normalize_header(line: str) -> str:
@@ -19,8 +35,24 @@ def _normalize_header(line: str) -> str:
     return m.group(1).strip() if m else ""
 
 
-def parse_md(text: str) -> dict[str, str]:
-    sections: dict[str, list[str]] = {"jd": [], "requirements": []}
+def _parse_dimensions(lines: list[str]) -> dict[str, bool]:
+    dims = dict(DEFAULT_DIMENSIONS)
+    for line in lines:
+        stripped = line.strip()
+        if not stripped or stripped.startswith("```") or stripped.startswith("（") or stripped.startswith("("):
+            continue
+        m = _DIM_LINE.match(stripped)
+        if not m:
+            continue
+        key = m.group(1).lower()
+        val = _BOOL.get(m.group(2).lower())
+        if val is not None:
+            dims[key] = val
+    return dims
+
+
+def parse_md(text: str) -> dict:
+    sections: dict[str, list[str]] = {"jd": [], "requirements": [], "dimensions": []}
     current: str | None = None
 
     for line in text.splitlines():
@@ -32,6 +64,9 @@ def parse_md(text: str) -> dict[str, str]:
             if header in REQ_HEADERS:
                 current = "requirements"
                 continue
+            if header in DIM_HEADERS:
+                current = "dimensions"
+                continue
             current = None
             continue
         if current:
@@ -40,6 +75,7 @@ def parse_md(text: str) -> dict[str, str]:
     return {
         "jd": "\n".join(sections["jd"]).strip(),
         "requirements": "\n".join(sections["requirements"]).strip(),
+        "dimensions": _parse_dimensions(sections["dimensions"]),
     }
 
 
@@ -47,7 +83,13 @@ def load_config(stem: str, inbox_dir: Path | None = None) -> dict:
     inbox = inbox_dir or (ROOT / "inbox")
     md_path = inbox / f"{stem}.md"
     if not md_path.exists():
-        return {"jd": "", "requirements": "", "has_jd": False, "config_file": None}
+        return {
+            "jd": "",
+            "requirements": "",
+            "has_jd": False,
+            "dimensions": dict(DEFAULT_DIMENSIONS),
+            "config_file": None,
+        }
 
     parsed = parse_md(md_path.read_text(encoding="utf-8"))
     jd = parsed["jd"]
@@ -55,6 +97,7 @@ def load_config(stem: str, inbox_dir: Path | None = None) -> dict:
         "jd": jd,
         "requirements": parsed["requirements"],
         "has_jd": bool(jd),
+        "dimensions": parsed["dimensions"],
         "config_file": str(md_path),
     }
 

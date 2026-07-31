@@ -149,9 +149,8 @@ Agent 会按 [`.cursor/skills/resume-optimize/SKILL.md`](.cursor/skills/resume-o
 | 文件 | 必须 | 说明 |
 |------|------|------|
 | `<stem>.docx` / `<stem>.pdf` | 是 | 原简历；**不要覆盖原件**，优化稿写到 outbox |
-| `<stem>.md` | 否 | JD + 额外要求；无文件或 JD 留空 → 走通用分支 |
-| [`_template.md`](inbox/_template.md) | 模板 | 复制改名使用 |
-| [`optimization_defaults.yaml`](inbox/optimization_defaults.yaml) | 仓库默认 | 六维开关（ATS / 结构 / 量化 / 技能 / 语言 / 亮点），一般不用改 |
+| `<stem>.md` | 否 | JD + 额外要求 + 可选六维开关；无文件或 JD 留空 → 走通用分支 |
+| [`_template.md`](inbox/_template.md) | 模板 | 复制改名使用（含六维默认全开） |
 
 ### `<stem>.md` 区块
 
@@ -161,13 +160,18 @@ Agent 会按 [`.cursor/skills/resume-optimize/SKILL.md`](.cursor/skills/resume-o
 
 ## 额外要求
 （如：突出 React/Vue、强调工程化、勿夸大管理经验等。）
+
+## 六维优化
+（一般保持默认全开；仅明确不想强化某一维时改为 false。）
 ```
+
+六维键名：`ats_keywords` / `structure` / `quantification` / `skill_matching` / `language` / `highlights`。完整示例见 [`inbox/_template.md`](inbox/_template.md)。无该段或无 md 时按默认全开。
 
 解析命令：
 
 ```bash
 python scripts/parse_inbox_config.py --stem "张三"
-# → { "jd", "requirements", "has_jd", ... }
+# → { "jd", "requirements", "has_jd", "dimensions", ... }
 ```
 
 ---
@@ -221,8 +225,9 @@ python scripts/parse_inbox_config.py --stem "张三"
 2. 按 **0–2 / 3–5 / 6–9 / 10+** 档位写，不统一「十年口吻」  
 3. **一次做透**表述与结构；不是补造经历  
 4. 禁止无信息增益的浅改（只换「负责→主导」等）  
-5. 技能区从全文（含项目技术栈）回填已有词；无依据不写入  
+5. 技能区从全文（含项目技术栈）**有选择地**回填：只补热门主流前端 JD 常见词；冷门库留在项目技术栈即可；无依据不写入  
 6. 量化：有机制才可保守估算并 note「请按实际数据核对调整」  
+7. **通用文案原则**（提示词内）：背景与职责分工、每条回答「所以呢」、起句勿同质、无数字也可写可感知结果、优势写事实（非个人模板搬迁，为跨经历可复用沉淀）
 
 防串条：必须先 `scaffold`，模型只改 `rewritten`/`note`，再 `merge`；**禁止改 `id`/`original`**。
 

@@ -6,7 +6,6 @@ __pycache__/
 inbox/*
 !inbox/.gitkeep
 !inbox/_template.md
-!inbox/optimization_defaults.yaml
 outbox/*
 !outbox/.gitkeep
 jsons/*
