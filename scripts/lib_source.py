@@ -13,8 +13,8 @@ def stem_from_outbox_name(name: str, *suffixes: str) -> str:
     stem = Path(name).stem
     for suffix in suffixes:
         if stem.endswith(suffix):
-            return stem[: -len(suffix)].strip() or "客户"
-    return stem.strip() or "客户"
+            return stem[: -len(suffix)].strip() or "简历"
+    return stem.strip() or "简历"
 
 
 def resolve_segments_json(stem: str, root: Path | None = None) -> Path | None:
@@ -36,7 +36,7 @@ def resolve_source_filename(
     explicit: str | None = None,
     source_type: str | None = None,
 ) -> str:
-    """Return display name like `吴卫.docx` (basename only)."""
+    """Return display name like `张三.docx` (basename only)."""
     if explicit:
         return Path(explicit).name
 

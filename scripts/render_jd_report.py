@@ -81,7 +81,7 @@ def main() -> None:
     parser.add_argument("--output", "-o", help="输出 HTML 路径（默认同名 .html）")
     parser.add_argument(
         "--source-file",
-        help="原稿文件名（如 吴卫.docx；默认从 segments/inbox 推断）",
+        help="原稿文件名（如 张三.docx；默认从 segments/inbox 推断）",
     )
     parser.add_argument(
         "--source-type",

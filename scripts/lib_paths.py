@@ -22,7 +22,7 @@ def ensure_outbox() -> Path:
 
 
 def json_path(stem: str, suffix: str) -> Path:
-    """Internal JSON under jsons/, e.g. json_path('吴卫', '_segments.json')."""
+    """Internal JSON under jsons/, e.g. json_path('张三', '_segments.json')."""
     if not suffix.startswith("_"):
         suffix = "_" + suffix
     if not suffix.endswith(".json"):

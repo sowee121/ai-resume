@@ -1,6 +1,6 @@
 ---
 name: resume
-description: 前端简历保样式优化 — 只改文案、不动版式。输入 /resume 时执行。
+description: AI 简历 — Cursor 一句指令自动跑通全流程。输入 /resume 时执行。
 disable-model-invocation: true
 ---
 

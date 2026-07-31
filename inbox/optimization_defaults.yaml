@@ -1,4 +1,4 @@
-# 六维优化默认开关（仓库级，客户无需编辑）
+# 六维优化默认开关（仓库级，一般无需改）
 dimensions:
   ats_keywords: true      # ATS 关键词
   structure: true         # 结构优化（轻量：bullet/字段顺序微调）

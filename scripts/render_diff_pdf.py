@@ -76,7 +76,7 @@ class PdfWriter:
         self._gap(8)
         if source_type == "pdf":
             self._write_line(
-                "PDF 回写为尽力而为，交付前请人工核对版式。",
+                "PDF 回写为尽力而为，输出前请人工核对版式。",
                 size=9,
                 color=(0.7, 0.5, 0.1),
             )
@@ -136,7 +136,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Render diff PDF from replacements JSON")
     parser.add_argument("--replacements", "-r", required=True)
     parser.add_argument("--output", "-o", required=True)
-    parser.add_argument("--source-file", help="原稿文件名（如 吴卫.docx）")
+    parser.add_argument("--source-file", help="原稿文件名（如 张三.docx）")
     parser.add_argument("--source-type", default=None, choices=["docx", "pdf"])
     parser.add_argument("--title", default="简历改动对比")
     args = parser.parse_args()

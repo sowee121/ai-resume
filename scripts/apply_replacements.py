@@ -94,7 +94,7 @@ def main() -> None:
             applied = apply_pdf_replacements(str(src), str(dst), mapping, segments)
             print(f"[ok] PDF 尽力回写 → {dst.name} (applied={applied})，请人工检查版式")
         except Exception as exc:  # noqa: BLE001
-            raise SystemExit(f"PDF 回写失败: {exc}。请向客户索取可编辑的 Word 原件。") from exc
+            raise SystemExit(f"PDF 回写失败: {exc}。请改用可编辑的 Word 原件。") from exc
     else:
         raise SystemExit(f"不支持的文件类型: {suffix}")
 

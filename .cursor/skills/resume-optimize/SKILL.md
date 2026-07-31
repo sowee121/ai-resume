@@ -1,26 +1,28 @@
 ---
 name: resume-optimize
-description: 前端简历保样式优化。用户说「简历优化」或只改文案/保原样式时使用。扫描 inbox 未优化的 docx/pdf，多份则请用户选择；用 Cursor Agent + 前端专用提示词改写；有 JD 时只出定制版交付包，无 JD 只出通用优化版。
+description: AI 简历。用户说「简历优化」时，在 Cursor 中一句指令自动跑通抽段/改写/回写/报告/验收。主打前端提示词；其他岗位可扩展 prompts。只改文案、不动版式；有 JD 出定制版，无 JD 出通用优化版。
 disable-model-invocation: true
 ---
 
-# 前端简历优化
+# AI 简历
 
 ## 触发语
 
-用户输入 **`简历优化`**（或同义：优化inbox / 保原样式优化）时执行本 Skill。
+用户输入 **`简历优化`**（或同义：优化inbox / `/resume`）时执行本 Skill；**一句指令自动跑完整条流程**。
 
 ## 定位
 
-- 定位：**前端简历**（按工作年限对标**该档完美简历**，可直接投递、少返工；不作统一「十年口吻」）
-- 只改文案、不动版式；模型用 **Cursor Agent**
+- 项目名：**AI 简历**
+- **Cursor 一句指令自动化**：抽段 → 改写 → 保版式回写 → 对照/诊断报告 → 验收
+- **主打前端**（当前 `prompts/` 为前端专用）；其他岗位可自行扩展提示词后复用本流程
+- 只改文案、不动版式；按工作年限对标**该档完美简历**；模型用 **Cursor Agent**
   - 提示词：
-  - 通用润色：`prompts/copy_only_zh.txt`（不夸大不编造 + 该档完美标准 + 交付前自检）
+  - 通用润色：`prompts/copy_only_zh.txt`（不夸大不编造 + 该档完美标准 + 输出前自检）
   - JD 定制：`prompts/frontend_jd_tailor_zh.txt`（不夸大不编造 + JD 定向 + 技能回填）
   - 优化诊断：`prompts/resume_review_zh.txt`（按同档位尺子打分）
   - Diff 结构大纲：`prompts/diff_outline_zh.txt`（优先保留原稿分类，不合理再改优）
 
-### 改写铁律（交付质量）
+### 改写铁律（产出质量）
 
 1. **不夸大、不编造（最高优先级）**：不得虚构或放大技术栈、项目、公司、职级、职责边界、团队规模、管理/带人、架构负责人身份、业务结果与数字。一次做透 ≠ 编造事实；只能在原文依据内改表述、结构、检索词回填。拿不准就不写、不抬档、不硬贴量化。
 2. **具体问题具体分析**：先推断年限档位（junior/mid/senior/staff）与本简历相对「该档完美简历」的 3–5 个缺口，再改写。
@@ -34,7 +36,7 @@ disable-model-invocation: true
 
 | inbox | 必须 | 说明 |
 |-------|------|------|
-| `<stem>.docx` / `<stem>.pdf` | 是 | 客户原简历 |
+| `<stem>.docx` / `<stem>.pdf` | 是 | 原简历 |
 | `<stem>.md` | 否 | JD + 额外要求（见 `inbox/_template.md`） |
 
 解析配置：
@@ -43,11 +45,11 @@ disable-model-invocation: true
 python scripts/parse_inbox_config.py --stem "<stem>"
 ```
 
-- `has_jd: true` → **只走 JD 分支**（不产出通用版客户文件）
+- `has_jd: true` → **只走 JD 分支**（不产出通用版终稿文件）
 - `has_jd: false` → **只走通用分支**
 - `requirements` 注入对应分支的提示词
 
-六维优化开关：读 `inbox/optimization_defaults.yaml`（仓库默认，客户不编辑）。
+六维优化开关：读 `inbox/optimization_defaults.yaml`（仓库默认，一般无需改）。
 
 ## 选文件
 
@@ -59,7 +61,7 @@ python scripts/parse_inbox_config.py --stem "<stem>"
 
 ## 步骤
 
-工作目录：`/Users/ww/Projects/AI Resume`，先 `source .venv/bin/activate`。
+工作目录：仓库根目录，先 `source .venv/bin/activate`。
 
 1. `python scripts/parse_inbox_config.py --stem "<stem>"` 判断分支
 2. `python scripts/extract_segments.py --input "inbox/<file>"`
@@ -76,7 +78,7 @@ python scripts/parse_inbox_config.py --stem "<stem>"
    - `python scripts/apply_replacements.py -i "inbox/<file>" -r "jsons/<stem>_replacements.json" -s "jsons/<stem>_segments.json"`
    - `python scripts/render_diff_report.py -r "jsons/<stem>_replacements.json" --outline "jsons/<stem>_diff_outline.json" --review "jsons/<stem>_review_report.json"`
    - `python scripts/render_review_report.py -i "jsons/<stem>_review_report.json"`
-   - `python scripts/verify_outbox.py --stem "<stem>"`（正文 + note + diff 说明；不通过不得交付）
+   - `python scripts/verify_outbox.py --stem "<stem>"`（正文 + note + diff 说明；不通过则不应结束流程）
 4. **分支 B（有 JD）**：
    - scaffold → 按年限档位 + JD 缺口诊断后改写（锁定 id/original）→ `merge_replacements.py merge` 产出 `jsons/<stem>_replacements_jd.json`
    - 读 `prompts/diff_outline_zh.txt` + segments，写 `jsons/<stem>_diff_outline.json`
@@ -87,7 +89,7 @@ python scripts/parse_inbox_config.py --stem "<stem>"
    - `python scripts/render_jd_report.py -i "jsons/<stem>_jd_report.json"`
    - `python scripts/render_review_report.py -i "jsons/<stem>_review_report.json"`
    - `python scripts/verify_outbox.py --stem "<stem>" --jd`
-5. 汇报 outbox 路径与客户交付清单；**验收未通过不得交付**
+5. 汇报 outbox 路径与最终产出清单；**验收未通过则不应结束流程**
 
 ### 防串条铁律（根源）
 
@@ -157,7 +159,7 @@ python scripts/parse_inbox_config.py --stem "<stem>"
   "score": 91,
   "score_before": 68,
   "tags": ["语言表达增强", "职责边界细化", "ATS关键词补强"],
-  "strengths": ["十年大厂背景", "Vue/React 双栈"],
+  "strengths": ["大厂/核心业务背景", "Vue/React 双栈"],
   "weaknesses": ["部分技术指标仍待补充", "早期项目可再加厚"],
   "dimensions": [
     {"name": "ATS 关键词", "score": 93, "score_before": 72, "comment": "技术栈覆盖较全，可补充工程化关键词"},
@@ -175,7 +177,7 @@ python scripts/parse_inbox_config.py --stem "<stem>"
 - `score` / `score_before`：优化后 / 优化前（原稿）综合分
 - **`_review_report.html/png` 只展示原稿分**（`score_before` 与各维 `score_before`）
 - **`_diff.png` 顶部评分卡**展示优化后分、提升分与标签（`score_before` 只用于算 Δ，界面不展示优化前分）
-- 交付口径：实质改写后优化后分通常 **88–94**，分差常见 **+14～+22**（见 `prompts/resume_review_zh.txt`）
+- 评分口径：实质改写后优化后分通常 **88–94**，分差常见 **+14～+22**（见 `prompts/resume_review_zh.txt`）
 - `tags`：提升类型短标签（增强/补强/提升/细化等），展示在 diff 顶部
 
 ### `_jd_report.json` 字段
@@ -199,19 +201,19 @@ python scripts/parse_inbox_config.py --stem "<stem>"
 }
 ```
 
-## 发给客户（互斥）
+## 最终产出（互斥）
 
 | 场景 | 文件 |
 |------|------|
 | 无 JD | `<stem>_优化版.docx/pdf` + `<stem>_diff.png` + `<stem>_review_report.png` |
 | 有 JD | `<stem>_定制版.docx/pdf` + `<stem>_diff_jd.png` + `<stem>_jd_report.png` + `<stem>_review_report.png` |
 
-**不发客户：** 任何 `.txt`、`.md`、`.json`、`.html`（HTML 仅供本地预览/调样式）。中间 JSON 一律放 `jsons/`，客户交付与 HTML/PNG 预览放 `outbox/`。
+**通常无需外传：** 任何 `.txt`、`.md`、`.json`、`.html`（HTML 仅供本地预览/调样式）。中间 JSON 一律放 `jsons/`，最终产出与 HTML/PNG 预览放 `outbox/`。
 
 ## 禁止
 
 - 换模板、改版式建议
 - 覆盖 inbox 原件
-- 夸大或编造技术栈、公司/项目、职级、职责范围、结果与数字；量化仅允许在有机制依据时按保守区间估算并 note 请客户核对，禁止夸张吹嘘与无依据硬贴
-- 同一单同时交付通用版与 JD 版
-- 把 HTML 发给客户（HTML 仅内部预览，客户只收 PNG）
+- 夸大或编造技术栈、公司/项目、职级、职责范围、结果与数字；量化仅允许在有机制依据时按保守区间估算并 note 请按实绩核对，禁止夸张吹嘘与无依据硬贴
+- 同一次流程同时产出通用版与 JD 版终稿
+- 把 HTML 当终稿（HTML 仅本地预览，终稿用 PNG）

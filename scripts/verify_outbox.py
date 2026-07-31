@@ -61,7 +61,7 @@ def verify(stem: str, has_jd: bool, outbox: Path | None = None) -> list[str]:
 
     for suffix in expected_client:
         if not _find(out, stem, suffix):
-            errors.append(f"[缺失] 客户文件 outbox/{stem}{suffix}* 不存在")
+            errors.append(f"[缺失] 产出文件 outbox/{stem}{suffix}* 不存在")
 
     for suffix in expected_preview:
         if not _find(out, stem, suffix):

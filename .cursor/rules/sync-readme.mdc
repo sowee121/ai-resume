@@ -1,5 +1,5 @@
 ---
-description: 流程或交付变动时同步更新 README.md 和 plan.md
+description: 流程或产出变动时同步更新 README.md 和 plan.md
 alwaysApply: true
 ---
 
@@ -15,6 +15,6 @@ alwaysApply: true
 - 脚本新增、删除或参数变更
 - 提示词文件变化
 - 分支逻辑（通用/JD 互斥）调整
-- 客户交付清单变化
+- 产出清单变化
 - Skill 流程步骤变化
 - 关键技术决策变更

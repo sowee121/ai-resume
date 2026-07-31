@@ -314,7 +314,7 @@ def build_html(
     pdf_note = ""
     if source_type == "pdf":
         pdf_note = (
-            '<div class="hero-note">PDF 回写为尽力而为，交付前请人工核对版式。</div>'
+            '<div class="hero-note">PDF 回写为尽力而为，输出前请人工核对版式。</div>'
         )
 
     result = tpl
@@ -342,7 +342,7 @@ def main() -> None:
     parser.add_argument("--output", "-o", help="输出 HTML 路径")
     parser.add_argument(
         "--source-file",
-        help="原稿文件名（如 吴卫.docx；默认从 segments/inbox 推断）",
+        help="原稿文件名（如 张三.docx；默认从 segments/inbox 推断）",
     )
     parser.add_argument("--source-type", default=None, choices=["docx", "pdf"])
     parser.add_argument("--title", default="简历改动对比")
