@@ -232,6 +232,14 @@ python scripts/parse_inbox_config.py --stem "张三"
 
 无 Chrome 时脚本会提示：用浏览器打开上述 HTML 自行截长图。
 
+**截图倍数：** 版式宽 750px，默认输出 **2 倍图（1500px 宽）**，适配高清屏与平台二次压缩。需要更清晰可临时提高：
+
+```bash
+AI_RESUME_CAPTURE_ZOOM=3 python scripts/render_review_report.py -i "jsons/张三_review_report.json"
+```
+
+倍数越高文件越大（对比长图 3 倍约 5 MB）；页面过长时脚本会自动回退倍数，避免生成超限巨图。
+
 ### 中间 JSON（jsons/，复跑与调试用）
 
 | 文件 | 说明 |
@@ -297,7 +305,7 @@ python scripts/verify_outbox.py --stem "张三" --jd # JD
 | `render_review_report.py` | 诊断 PNG（原稿分） |
 | `make_readme_previews.py` | 改动对比 README 预览：截到首个模块大卡片 |
 | `render_jd_report.py` | 岗位匹配 PNG |
-| `render_html_capture.py` | HTML→单页 PDF→PNG |
+| `render_html_capture.py` | HTML→单页 PDF→PNG（默认 2 倍图，1500px 宽） |
 | `verify_content.py` / `verify_outbox.py` | 内容与产出验收 |
 | `lib_docx.py` / `lib_pdf.py` / `lib_paths.py` | 核心库与路径约定 |
 
@@ -330,6 +338,7 @@ python scripts/verify_outbox.py --stem "张三"
 
 - **优先 Word（.docx）**；PDF 抽段/回写仅尽力而为，复杂版式可能偏差  
 - PNG 依赖本机 Chrome；截图使用 `--use-mock-keychain`（不改 HOME，避免钥匙串弹窗）；无 Chrome 时仅 HTML  
+- 截图默认 2 倍图（1500px 宽），可用 `AI_RESUME_CAPTURE_ZOOM` 调整；超长页面会自动回退倍数  
 - 本仓库**不负责换模板/重排版**；需要换模板请另寻工具  
 - 开源仓库勿提交含隐私的真实简历（已 ignore 个人 `inbox` 文件、`outbox/*`、`jsons/*`）
 

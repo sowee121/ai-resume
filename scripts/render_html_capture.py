@@ -17,6 +17,16 @@ from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parents[1]
 
+# 截图版式宽度（CSS px），与 @page size 一致
+PAGE_WIDTH_CSS = 750
+# Chrome print-to-PDF 按 96dpi → 72pt 换算，1 CSS px = 0.75 pt
+PT_PER_CSS_PX = 0.75
+# 默认输出倍数：2 倍图（1500px 宽），兼顾清晰度与文件体积
+DEFAULT_ZOOM = 2.0
+# 超长图保护：避免 pixmap 占用过高内存 / 生成平台无法处理的巨图
+MAX_LONG_EDGE_PX = 32000
+MAX_TOTAL_PX = 80_000_000
+
 CHROME_PATHS = [
     "/Applications/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing",
     "/Applications/Chromium.app/Contents/MacOS/Chromium",
@@ -81,10 +91,34 @@ def estimate_page_height(html: str) -> int:
     return min(16000, max(2600, 1100 + n_card * 210 + n_dim * 105 + n_li * 46))
 
 
+def resolve_zoom(zoom: float | None = None) -> float:
+    """输出倍数：显式参数 > 环境变量 AI_RESUME_CAPTURE_ZOOM > 默认 2 倍。"""
+    if zoom is not None:
+        return max(1.0, float(zoom))
+    env = (os.environ.get("AI_RESUME_CAPTURE_ZOOM") or "").strip()
+    if env:
+        try:
+            return max(1.0, float(env))
+        except ValueError:
+            print(f"[warn] AI_RESUME_CAPTURE_ZOOM={env!r} 不是数字，按默认 {DEFAULT_ZOOM} 倍处理。")
+    return DEFAULT_ZOOM
+
+
+def clamp_zoom(zoom: float, height_css: int, width_css: int = PAGE_WIDTH_CSS) -> float:
+    """超长图按长边与总像素上限回退倍数，避免内存爆掉。"""
+    by_edge = MAX_LONG_EDGE_PX / max(width_css, height_css)
+    by_area = (MAX_TOTAL_PX / (width_css * height_css)) ** 0.5
+    allowed = max(1.0, min(by_edge, by_area))
+    if zoom > allowed:
+        print(f"[warn] 页面过长（约 {height_css}px），倍数由 {zoom:g} 回退到 {allowed:.2f}。")
+        return allowed
+    return zoom
+
+
 def inject_capture_page_size(html: str, height_px: int) -> str:
     style = f"""
 <style id="capture-page-size">
-  @page {{ size: 750px {height_px}px; margin: 0; }}
+  @page {{ size: {PAGE_WIDTH_CSS}px {height_px}px; margin: 0; }}
   html, body {{
     height: auto !important;
     min-height: 0 !important;
@@ -236,8 +270,11 @@ def _run_chrome_pdf(chrome: str, url: str, pdf_path: Path, td: Path) -> None:
     raise RuntimeError(f"Chrome 截图失败: {last_err}")
 
 
-def html_to_png(html_path: Path, png_path: Path, *, scale: float = 1.5) -> bool:
-    """Render local HTML file to a single long PNG, cropped to content."""
+def html_to_png(html_path: Path, png_path: Path, *, zoom: float | None = None) -> bool:
+    """Render local HTML file to a single long PNG, cropped to content.
+
+    zoom 为相对 750px 版式的真实输出倍数（2 → 1500px 宽）。
+    """
     import fitz
 
     chrome = find_chrome()
@@ -248,8 +285,9 @@ def html_to_png(html_path: Path, png_path: Path, *, scale: float = 1.5) -> bool:
     raw = html_path.read_text(encoding="utf-8")
     height = estimate_page_height(raw)
     prepared = inject_capture_page_size(raw, height)
+    zoom = clamp_zoom(resolve_zoom(zoom), height)
     pad_css = _detect_body_padding_bottom(raw)
-    pad_px = max(8, int(round(pad_css * scale)))
+    pad_px = max(8, int(round(pad_css * zoom)))
 
     png_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -277,7 +315,9 @@ def html_to_png(html_path: Path, png_path: Path, *, scale: float = 1.5) -> bool:
         page_count = doc.page_count
         if page_count != 1:
             print(f"[warn] PDF 页数为 {page_count}（估算高度 {height}px），仍按拼接处理。")
-        matrix = fitz.Matrix(scale, scale)
+        # PDF 页宽已按 0.75 缩过，这里补回，使输出等于 zoom × CSS 像素
+        matrix_scale = zoom / PT_PER_CSS_PX
+        matrix = fitz.Matrix(matrix_scale, matrix_scale)
         pixmaps = [page.get_pixmap(matrix=matrix, alpha=False) for page in doc]
         doc.close()
 
@@ -297,6 +337,6 @@ def html_to_png(html_path: Path, png_path: Path, *, scale: float = 1.5) -> bool:
         final.save(str(png_path))
         print(
             f"[ok] PNG 截图 → {png_path.name} "
-            f"({png_path.stat().st_size // 1024} KB, {final.width}x{final.height})"
+            f"({png_path.stat().st_size // 1024} KB, {final.width}x{final.height}, {zoom:g}x)"
         )
         return True

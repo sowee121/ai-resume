@@ -183,6 +183,7 @@ Skill 权威步骤：[`.cursor/skills/resume-optimize/SKILL.md`](.cursor/skills/
 | 模型入口 | Cursor Agent | 无需另配 API Key 即可开箱 |
 | 报告形态 | PNG 长图 | 社交软件可直接预览 |
 | 渲染 | HTML + Chrome headless | CSS 能力完整 |
+| 截图倍数 | 默认 2 倍（1500px 宽） | 抗平台二次压缩；再高则文件过大 |
 | 配置 | 单文件 `<stem>.md` | 降低配置成本 |
 | 通用 vs JD | 互斥 | 一次只交一套，避免困惑 |
 | 结构优化 | 轻量 | 服从保版式定位 |
@@ -197,7 +198,7 @@ Skill 权威步骤：[`.cursor/skills/resume-optimize/SKILL.md`](.cursor/skills/
 
 1. **脚手架与入口** — 抽段回写、Skill、六维、触发语  
 2. **输入输出约定** — md 配置、互斥产出、验收与文档同步规则  
-3. **报告渲染链路** — JSON→HTML→PNG；diff/jd/review 统一截图  
+3. **报告渲染链路** — JSON→HTML→PNG；diff/jd/review 统一截图（默认 2 倍图）  
 4. **Diff 体验** — GitHub 风格、模型大纲、note、顶部评分卡  
 5. **改写与评分** — 分档、完美简历标准、不夸大不编造、评分展示分工  
 6. **质量与防串条** — verify_content、merge_replacements  
@@ -217,6 +218,7 @@ Skill 权威步骤：[`.cursor/skills/resume-optimize/SKILL.md`](.cursor/skills/
 20. **README 示例图** — 诊断 / 改动对比 / 岗位匹配三图并列；页头统一「简历改动对比」
 21. **禁钥匙串弹窗** — 去掉假 HOME；加 `--use-mock-keychain` / `--password-store=basic`
 22. **README 预览截断** — 诊断/岗位匹配用原图；改动对比预览截到首个 `.section-card`（含至少第一处改动）
+23. **截图改真多倍图** — 原 `scale=1.5` 作用于 PDF 点（已含 0.75 缩放），实际仅 1.125 倍、845px 宽，上传平台二次压缩后发虚；改为按 CSS 像素的真实倍数 `zoom`（默认 2 倍 / 1500px 宽），支持 `AI_RESUME_CAPTURE_ZOOM` 覆盖，超长页面自动回退倍数
 ---
 
 ## 八、已知问题与后续方向
