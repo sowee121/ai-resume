@@ -404,7 +404,7 @@ def main() -> None:
     html_path.parent.mkdir(parents=True, exist_ok=True)
     html_path.write_text(html_content, encoding="utf-8")
     note = "含评分卡" if review else "无评分卡"
-    print(f"[ok] HTML 对照 → {html_path.name} ({structure_note} · {note})")
+    print(f"[ok] HTML 对比 → {html_path.name} ({structure_note} · {note})")
 
     if not args.no_png:
         png_path = html_path.with_suffix(".png")

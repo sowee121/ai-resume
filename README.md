@@ -18,7 +18,7 @@
 |------|------------|
 | 换模板等于重排版，原版式丢失 | 保原 Word/PDF 样式，只换文案 |
 | 改写同质化、装资深、乱贴百分比 | 按年限档位对标「该档完美简历」；禁止浅改充数 |
-| 改完不知道改了哪里、值不值 | 输出对照长图 + 诊断报告（可选岗位匹配报告） |
+| 改完不知道改了哪里、值不值 | 输出对比长图 + 诊断报告（可选岗位匹配报告） |
 | 模型改串条、说明挂错段落 | scaffold/merge 锁定原文；验收脚本拦串改 |
 
 适合：用 Cursor 优化自己的前端（或扩展后的其他岗位）简历；也可作为保版式改写流水线二次开发。
@@ -62,42 +62,35 @@ flowchart TD
 
 | 条件 | 分支 | 最终产出 |
 |------|------|----------|
-| 无 `<stem>.md`，或 JD 区块为空 | **通用优化** | 优化版简历 + 改动对照 + 优化诊断 |
-| JD 区块非空 | **JD 定制** | 定制版简历 + JD 对照 + 岗位匹配 + 优化诊断 |
+| 无 `<stem>.md`，或 JD 区块为空 | **通用优化** | 优化版简历 + 改动对比 + 优化诊断 |
+| JD 区块非空 | **JD 定制** | 定制版简历 + JD 对比 + 岗位匹配 + 优化诊断 |
 
-同一份简历单次运行**只走一条分支**（有 JD → 定制；无 JD → 通用），避免混淆。仓库官方示例 `张三` 为便于对照，**同时保留**两套完整产出。
+同一份简历单次运行**只走一条分支**（有 JD → 定制；无 JD → 通用），避免混淆。仓库官方示例 `张三` 为便于对比，**同时保留**两套完整产出。
 
 ---
 
 ## 示例效果
 
-以下为虚构示例「张三」的真实产出截图（路径均在 [`outbox/`](outbox/)）。长图已限制展示宽度，点击可看原图。
+虚构示例「张三」产出截图（[`outbox/`](outbox/)）。三图并列：诊断、改动对比、岗位匹配。README 仅展示顶部预览（约 960px 高），点击可看完整长图。
 
-### 优化诊断
+<table>
+  <tr>
+    <td align="center" valign="top" width="33%">
+      <p><b>优化诊断</b></p>
+      <a href="outbox/张三_review_report.png"><img src="outbox/张三_review_report_preview.png" alt="优化诊断（预览）" width="100%" /></a>
+    </td>
+    <td align="center" valign="top" width="33%">
+      <p><b>改动对比</b></p>
+      <a href="outbox/张三_diff.png"><img src="outbox/张三_diff_preview.png" alt="改动对比（预览）" width="100%" /></a>
+    </td>
+    <td align="center" valign="top" width="33%">
+      <p><b>岗位匹配</b></p>
+      <a href="outbox/张三_jd_report.png"><img src="outbox/张三_jd_report_preview.png" alt="岗位匹配（预览）" width="100%" /></a>
+    </td>
+  </tr>
+</table>
 
-原稿六维评分与改进建议（通用 / JD 共用）：
-
-<img src="outbox/张三_review_report.png" width="720" alt="张三 · 简历优化诊断报告" />
-
-### 通用优化 · 改动对照
-
-无 JD 时的改写对照（原文 / 改写 + 说明）：
-
-<img src="outbox/张三_diff.png" width="720" alt="张三 · 通用优化改动对照" />
-
-### JD 定制 · 改动对照
-
-按 mock 岗位定向改写后的对照：
-
-<img src="outbox/张三_diff_jd.png" width="720" alt="张三 · JD 定制改动对照" />
-
-### JD 定制 · 岗位匹配
-
-匹配 / 缺失关键词与下一步建议：
-
-<img src="outbox/张三_jd_report.png" width="720" alt="张三 · 岗位匹配诊断报告" />
-
-对应终稿：[`张三_优化版.docx`](outbox/张三_优化版.docx)（通用）、[`张三_定制版.docx`](outbox/张三_定制版.docx)（JD）。
+对应终稿：[`张三_优化版.docx`](outbox/张三_优化版.docx)（通用）、[`张三_定制版.docx`](outbox/张三_定制版.docx)（JD）。预览图可用 `python scripts/make_readme_previews.py` 从完整 PNG 重新裁切。
 
 ---
 
@@ -187,7 +180,7 @@ Agent 会按 [`.cursor/skills/resume-optimize/SKILL.md`](.cursor/skills/resume-o
 
 ### 官方示例说明
 
-`张三` 为**虚构履历样例**（非真实个人经历）：约五年前端；工作经历示例公司为国内互联网头部四家（字节跳动、阿里巴巴、腾讯、百度）。**版式**：对齐两页母版槽位。项目块五段（青柠闪送 / 仓脉 / 星轨投放 / 云工单 / 学知堂；主栈 uni-app / Vue2 / React / Vue3 / Electron）。`inbox/张三.md` 含 mock JD（对话里跑优化默认走 JD 分支）。**示例产出双套齐全**：通用 `_优化版` + `_diff`；JD `_定制版` + `_diff_jd` + `_jd_report`；共用 `_review_report`。两套均完整时 `verify_outbox` 放宽互斥，便于对照演示。
+`张三` 为**虚构履历样例**（非真实个人经历）：约五年前端；工作经历示例公司为国内互联网头部四家（字节跳动、阿里巴巴、腾讯、百度）。**版式**：对齐两页母版槽位。项目块五段（青柠闪送 / 仓脉 / 星轨投放 / 云工单 / 学知堂；主栈 uni-app / Vue2 / React / Vue3 / Electron）。`inbox/张三.md` 含 mock JD（对话里跑优化默认走 JD 分支）。**示例产出双套齐全**：通用 `_优化版` + `_diff`；JD `_定制版` + `_diff_jd` + `_jd_report`；共用 `_review_report`。两套均完整时 `verify_outbox` 放宽互斥，便于对比演示。
 
 ### `<stem>.md` 区块
 
@@ -220,10 +213,10 @@ python scripts/parse_inbox_config.py --stem "张三"
 | 场景 | 文件 | 含义 |
 |------|------|------|
 | 通用 | `<stem>_优化版.docx`（或 `.pdf`） | 保样式回写后的优化简历 |
-| 通用 | `<stem>_diff.png` | 改动对照长图：原文/改写、`note` 说明、顶部优化后评分 |
+| 通用 | `<stem>_diff.png` | 改动对比长图：原文/改写、`note` 说明、顶部优化后评分 |
 | 通用 | `<stem>_review_report.png` | **优化前**六维测评与可优化方向 |
 | JD | `<stem>_定制版.docx`（或 `.pdf`） | 按 JD 定向改写后的简历 |
-| JD | `<stem>_diff_jd.png` | JD 定制改动对照 |
+| JD | `<stem>_diff_jd.png` | 改动对比（与通用同一模板，仅文件名区分分支） |
 | JD | `<stem>_jd_report.png` | 岗位匹配：匹配/缺失关键词、建议与下一步 |
 | JD | `<stem>_review_report.png` | 同上，优化前测评（两分支都有） |
 
@@ -233,7 +226,7 @@ python scripts/parse_inbox_config.py --stem "张三"
 
 | 文件 | 说明 |
 |------|------|
-| `_diff.html` / `_diff_jd.html` | 对照报告 HTML（截图源） |
+| `_diff.html` / `_diff_jd.html` | 对比报告 HTML（截图源） |
 | `_review_report.html` | 诊断报告 HTML |
 | `_jd_report.html` | 岗位匹配 HTML（仅 JD） |
 
@@ -300,8 +293,9 @@ python scripts/verify_outbox.py --stem "张三" --jd # JD
 | `extract_segments.py` | 抽段 → `jsons/` |
 | `merge_replacements.py` | `scaffold` / `merge` / `set` |
 | `apply_replacements.py` | 保样式回写 → `_优化版` 或 `_定制版` |
-| `render_diff_report.py` | 对照 PNG |
+| `render_diff_report.py` | 对比 PNG |
 | `render_review_report.py` | 诊断 PNG（原稿分） |
+| `make_readme_previews.py` | 从完整报告 PNG 顶部裁切 README 预览图 |
 | `render_jd_report.py` | 岗位匹配 PNG |
 | `render_html_capture.py` | HTML→单页 PDF→PNG |
 | `verify_content.py` / `verify_outbox.py` | 内容与产出验收 |
@@ -335,7 +329,7 @@ python scripts/verify_outbox.py --stem "张三"
 ## 限制与注意
 
 - **优先 Word（.docx）**；PDF 抽段/回写仅尽力而为，复杂版式可能偏差  
-- PNG 依赖本机 Chrome；截图进程隔离 HOME/profile，尽量减少 macOS 崩溃弹窗；无 Chrome 时仅 HTML  
+- PNG 依赖本机 Chrome；截图使用 `--use-mock-keychain`（不改 HOME，避免钥匙串弹窗）；无 Chrome 时仅 HTML  
 - 本仓库**不负责换模板/重排版**；需要换模板请另寻工具  
 - 开源仓库勿提交含隐私的真实简历（已 ignore 个人 `inbox` 文件、`outbox/*`、`jsons/*`）
 

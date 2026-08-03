@@ -13,7 +13,7 @@ disable-model-invocation: true
 ## 定位
 
 - 项目名：**AI 简历**
-- **Cursor 一句指令自动化**：抽段 → 改写 → 保版式回写 → 对照/诊断报告 → 验收
+- **Cursor 一句指令自动化**：抽段 → 改写 → 保版式回写 → 对比/诊断报告 → 验收
 - **主打前端**（当前 `prompts/` 为前端专用）；其他岗位可自行扩展提示词后复用本流程
 - 只改文案、不动版式；按工作年限对标**该档完美简历**；模型用 **Cursor Agent**
   - 提示词：
@@ -84,7 +84,7 @@ python scripts/parse_inbox_config.py --stem "<stem>"
    - 读 `prompts/diff_outline_zh.txt` + segments，写 `jsons/<stem>_diff_outline.json`
    - 读 `prompts/resume_review_zh.txt` + 优化前/后文本，写 `jsons/<stem>_review_report.json`
    - `python scripts/apply_replacements.py -i "inbox/<file>" -r "jsons/<stem>_replacements_jd.json" -s "jsons/<stem>_segments.json" --jd`
-   - `python scripts/render_diff_report.py -r "jsons/<stem>_replacements_jd.json" --outline "jsons/<stem>_diff_outline.json" --review "jsons/<stem>_review_report.json" --title "JD定制改动对比"`
+   - `python scripts/render_diff_report.py -r "jsons/<stem>_replacements_jd.json" --outline "jsons/<stem>_diff_outline.json" --review "jsons/<stem>_review_report.json"`
    - Auto 生成 `jsons/<stem>_jd_report.json`（紧凑 JSON，字段见下）
    - `python scripts/render_jd_report.py -i "jsons/<stem>_jd_report.json"`
    - `python scripts/render_review_report.py -i "jsons/<stem>_review_report.json"`
@@ -118,7 +118,7 @@ python scripts/parse_inbox_config.py --stem "<stem>"
 ]
 ```
 
-- `note`：改动说明（一句），解释改了什么、目的或提升效果；对照 PNG 在每条 `-/+` 下以灰色文案展示
+- `note`：改动说明（一句），解释改了什么、目的或提升效果；对比 PNG 在每条 `-/+` 下以灰色文案展示
 - 未改写条目：`note` 必须为 `""`
 - **量化估算**：原文有动作缺数字时，按行业常见保守区间写入 `rewritten`；该类 `note` 须含「可按实际调整」
 
@@ -183,7 +183,7 @@ python scripts/parse_inbox_config.py --stem "<stem>"
 ### `_jd_report.json` 字段
 
 **关键词匹配硬规则（必须遵守）：**
-- `matched_keywords` / `missing_keywords` 必须对照**简历全文**判定，至少包括：专业技能、工作职责、项目简介、**项目技术栈行**、自我评价
+- `matched_keywords` / `missing_keywords` 必须对比**简历全文**判定，至少包括：专业技能、工作职责、项目简介、**项目技术栈行**、自我评价
 - **禁止只扫「专业技能」区**：技术词常出现在项目技术栈（如 `Node.js`、`react-i18next`、`vue-i18n`），技能区未单列也算**已匹配**
 - 仅当全文（含项目技术栈）均无依据时，才可列入 `missing_keywords`
 - `weak_points` 不得写「未在简历中体现」，若该词其实出现在项目技术栈/职责中

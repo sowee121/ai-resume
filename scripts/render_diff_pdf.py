@@ -162,7 +162,7 @@ def main() -> None:
     out = Path(args.output)
     writer.save(out)
     size_kb = max(1, out.stat().st_size // 1024)
-    print(f"[ok] 对照 PDF → {out.name} ({size_kb} KB)")
+    print(f"[ok] 对比 PDF → {out.name} ({size_kb} KB)")
 
 
 if __name__ == "__main__":

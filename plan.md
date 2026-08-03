@@ -124,7 +124,7 @@ flowchart TD
 | 报告 | 展示重点 |
 |------|----------|
 | `_review_report` | **原稿**综合分与六维（`score_before`）；优势 / 可优化项 / 建议 / 下一步 |
-| `_diff` / `_diff_jd` | **优化后**分与提升；层级对照 + 每条改动说明 |
+| `_diff` / `_diff_jd` | **优化后**分与提升；层级对比 + 每条改动说明 |
 | `_jd_report` | 匹配/缺失关键词（**全文含项目技术栈**）、弱项与下一步 |
 
 ### 3.4 中间产物（jsons/）
@@ -151,7 +151,7 @@ ATS 关键词、结构（轻量调序）、量化、技能匹配、语言表达�
 
 ### 4.4 JD 匹配
 
-- `matched` / `missing` 对照**全文**（技能 + 职责 + 简介 + **项目技术栈**）  
+- `matched` / `missing` 对比**全文**（技能 + 职责 + 简介 + **项目技术栈**）  
 - 技能区未列但技术栈已有 → 记匹配；仅主流 JD 常见词才建议回填技能区，冷门库不必回填  
 - 同技术不同写法由模型语义判断，无固定别名表  
 
@@ -211,11 +211,12 @@ Skill 权威步骤：[`.cursor/skills/resume-optimize/SKILL.md`](.cursor/skills/
 14. **张三示例全文推倒重写** — 技能/任职/项目/优势全部新写，仅保留母版版式与行数槽位
 15. **云工单单端 + 学知堂 Electron** — 云工单固定 Web 一端；学知堂 Electron 桌面端
 16. **清理示例生成脚本** — 删除一次性 `build_sample_zhangsan.py`
-17. **截图隔离兜底** — 仍用本机 Chrome 自动出 PNG；隔离 HOME + crash-dumps
+17. **截图隔离兜底** — 仍用本机 Chrome 自动出 PNG；`--use-mock-keychain` + crash-dumps（不改 HOME，避免钥匙串弹窗）
 18. **张三示例切 JD 分支** — md 写入 mock 资深前端 JD；产出定制版与岗位匹配报告
-19. **张三示例双套并存** — 再补通用优化版；`verify_outbox` 在两套终稿均完整时放宽互斥，便于官方示例对照
-20. **README 示例图** — 引入 `outbox` 四张 PNG（review / diff / diff_jd / jd_report）作效果展示
-
+19. **张三示例双套并存** — 再补通用优化版；`verify_outbox` 在两套终稿均完整时放宽互斥，便于官方示例对比
+20. **README 示例图** — 诊断 / 改动对比 / 岗位匹配三图并列；页头统一「简历改动对比」
+21. **禁钥匙串弹窗** — 去掉假 HOME；加 `--use-mock-keychain` / `--password-store=basic`
+22. **README 预览截断** — 长图顶部裁切 `*_preview.png`（约 960px），点击链到完整 PNG
 ---
 
 ## 八、已知问题与后续方向
@@ -223,8 +224,8 @@ Skill 权威步骤：[`.cursor/skills/resume-optimize/SKILL.md`](.cursor/skills/
 ### 已知问题
 
 1. PDF 源回写不精确，复杂版式易偏差 → **优先使用 docx 源文件**  
-2. PNG 依赖本机 Chrome；截图用隔离 profile，尽量减少崩溃弹窗；无 Chrome 时仅 HTML  
-3. 对照/报告文件名仍有 `_diff` / `_review_report` 等英文后缀（简历文件名已中文化）  
+2. PNG 依赖本机 Chrome；使用 mock keychain，不改 HOME，避免钥匙串弹窗；无 Chrome 时仅 HTML  
+3. 对比/报告文件名仍有 `_diff` / `_review_report` 等英文后缀（简历文件名已中文化）  
 
 ### 后续可做
 

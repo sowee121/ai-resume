@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Shared HTML → PNG capture helpers (Chrome print-to-PDF, single tall page).
 
-自动截图仍用本机 Chrome/Chromium；启动时隔离 HOME + user-data-dir，
-尽量减少 macOS「意外退出」弹窗（不额外下载上百 MB 浏览器）。
+自动截图用本机 Chrome/Chromium。不改 HOME（避免 macOS 钥匙串弹窗），
+使用 --use-mock-keychain，并隔离 crash dumps，尽量减少系统对话框。
 """
 
 from __future__ import annotations
@@ -44,7 +44,7 @@ def favicon_link_html(root: Path | None = None, *, name: str = "favicon.svg") ->
     name:
       - favicon.svg      — review（紫粉橙，对齐诊断页头）
       - favicon-jd.svg    — jd（靛蓝→紫→青，对齐岗位匹配页头高分渐变）
-      - favicon-diff.svg — diff（青绿→蓝，对齐对照页头）
+      - favicon-diff.svg — diff（青绿→蓝，对齐对比页头）
     """
     base = root or ROOT
     svg_path = base / "templates" / name
@@ -178,56 +178,42 @@ def _trim_bottom_padding(pix, pad: int = 21):
     return _crop_to_height(pix, bottom)
 
 
-def _isolated_env(td: Path) -> dict[str, str]:
-    """Fake HOME，避免 Crashpad 写入真实用户目录触发系统弹窗。"""
+def _capture_env(td: Path) -> dict[str, str]:
+    """截图进程环境：不改 HOME（改 HOME 会触发 macOS「找不到钥匙串」弹窗）。"""
     env = os.environ.copy()
-    home = td / "home"
-    home.mkdir(parents=True, exist_ok=True)
-    env["HOME"] = str(home)
-    env["XDG_CONFIG_HOME"] = str(home / ".config")
-    env["XDG_CACHE_HOME"] = str(home / ".cache")
-    env["XDG_DATA_HOME"] = str(home / ".local" / "share")
     env["CHROME_HEADLESS"] = "1"
     env["BREAKPAD_DUMP_LOCATION"] = str(td / "breakpad")
+    # 避免 headless 去碰系统钥匙串 / 凭据存储
+    env.pop("GOOGLE_API_KEY", None)
     return env
 
 
 def _run_chrome_pdf(chrome: str, url: str, pdf_path: Path, td: Path) -> None:
     crash_dir = td / "crashes"
     crash_dir.mkdir(parents=True, exist_ok=True)
-    env = _isolated_env(td)
+    env = _capture_env(td)
 
-    # 说明：macOS 上给本机 Google Chrome 加 --user-data-dir 临时目录容易卡住；
-    # 只用隔离 HOME + crash-dumps-dir，既自动截图，又尽量少弹「意外退出」。
+    # 说明：
+    # - 不改 HOME、不加临时 --user-data-dir（前者弹钥匙串，后者在 macOS 易卡住）
+    # - --use-mock-keychain / --password-store=basic：禁止访问系统钥匙串
+    # - crash-dumps-dir + 关闭 crash reporter：尽量少弹「意外退出」
+    common = [
+        f"--crash-dumps-dir={crash_dir}",
+        "--disable-crash-reporter",
+        "--disable-breakpad",
+        "--use-mock-keychain",
+        "--password-store=basic",
+        "--disable-gpu",
+        "--disable-dev-shm-usage",
+        "--no-first-run",
+        "--no-default-browser-check",
+        "--no-sandbox",
+        f"--print-to-pdf={pdf_path}",
+        "--no-pdf-header-footer",
+    ]
     attempts = [
-        [
-            chrome,
-            "--headless=new",
-            f"--crash-dumps-dir={crash_dir}",
-            "--disable-crash-reporter",
-            "--disable-breakpad",
-            "--disable-gpu",
-            "--disable-dev-shm-usage",
-            "--no-first-run",
-            "--no-default-browser-check",
-            "--no-sandbox",
-            f"--print-to-pdf={pdf_path}",
-            "--no-pdf-header-footer",
-            url,
-        ],
-        [
-            chrome,
-            "--headless",
-            f"--crash-dumps-dir={crash_dir}",
-            "--disable-crash-reporter",
-            "--disable-breakpad",
-            "--disable-gpu",
-            "--no-first-run",
-            "--no-sandbox",
-            f"--print-to-pdf={pdf_path}",
-            "--no-pdf-header-footer",
-            url,
-        ],
+        [chrome, "--headless=new", *common, url],
+        [chrome, "--headless", *common, url],
     ]
 
     last_err: Exception | None = None
