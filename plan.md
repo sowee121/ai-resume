@@ -216,7 +216,7 @@ Skill 权威步骤：[`.cursor/skills/resume-optimize/SKILL.md`](.cursor/skills/
 19. **张三示例双套并存** — 再补通用优化版；`verify_outbox` 在两套终稿均完整时放宽互斥，便于官方示例对比
 20. **README 示例图** — 诊断 / 改动对比 / 岗位匹配三图并列；页头统一「简历改动对比」
 21. **禁钥匙串弹窗** — 去掉假 HOME；加 `--use-mock-keychain` / `--password-store=basic`
-22. **README 预览截断** — 长图顶部裁切 `*_preview.png`（约 960px），点击链到完整 PNG
+22. **README 预览截断** — 诊断/岗位匹配用原图；改动对比预览截到首个 `.section-card`（含至少第一处改动）
 ---
 
 ## 八、已知问题与后续方向

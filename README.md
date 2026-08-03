@@ -71,13 +71,13 @@ flowchart TD
 
 ## 示例效果
 
-虚构示例「张三」产出截图（[`outbox/`](outbox/)）。三图并列：诊断、改动对比、岗位匹配。README 仅展示顶部预览（约 960px 高），点击可看完整长图。
+虚构示例「张三」产出截图（[`outbox/`](outbox/)）。三图并列：诊断、改动对比、岗位匹配。诊断与岗位匹配用完整原图；改动对比截到首个模块卡片（含至少第一处改动），点击可看完整长图。
 
 <table>
   <tr>
     <td align="center" valign="top" width="33%">
       <p><b>优化诊断</b></p>
-      <a href="outbox/张三_review_report.png"><img src="outbox/张三_review_report_preview.png" alt="优化诊断（预览）" width="100%" /></a>
+      <a href="outbox/张三_review_report.png"><img src="outbox/张三_review_report.png" alt="优化诊断" width="100%" /></a>
     </td>
     <td align="center" valign="top" width="33%">
       <p><b>改动对比</b></p>
@@ -85,12 +85,12 @@ flowchart TD
     </td>
     <td align="center" valign="top" width="33%">
       <p><b>岗位匹配</b></p>
-      <a href="outbox/张三_jd_report.png"><img src="outbox/张三_jd_report_preview.png" alt="岗位匹配（预览）" width="100%" /></a>
+      <a href="outbox/张三_jd_report.png"><img src="outbox/张三_jd_report.png" alt="岗位匹配" width="100%" /></a>
     </td>
   </tr>
 </table>
 
-对应终稿：[`张三_优化版.docx`](outbox/张三_优化版.docx)（通用）、[`张三_定制版.docx`](outbox/张三_定制版.docx)（JD）。预览图可用 `python scripts/make_readme_previews.py` 从完整 PNG 重新裁切。
+对应终稿：[`张三_优化版.docx`](outbox/张三_优化版.docx)（通用）、[`张三_定制版.docx`](outbox/张三_定制版.docx)（JD）。对比预览可用 `python scripts/make_readme_previews.py` 重新生成。
 
 ---
 
@@ -295,7 +295,7 @@ python scripts/verify_outbox.py --stem "张三" --jd # JD
 | `apply_replacements.py` | 保样式回写 → `_优化版` 或 `_定制版` |
 | `render_diff_report.py` | 对比 PNG |
 | `render_review_report.py` | 诊断 PNG（原稿分） |
-| `make_readme_previews.py` | 从完整报告 PNG 顶部裁切 README 预览图 |
+| `make_readme_previews.py` | 改动对比 README 预览：截到首个模块大卡片 |
 | `render_jd_report.py` | 岗位匹配 PNG |
 | `render_html_capture.py` | HTML→单页 PDF→PNG |
 | `verify_content.py` / `verify_outbox.py` | 内容与产出验收 |

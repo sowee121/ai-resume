@@ -1,48 +1,58 @@
 #!/usr/bin/env python3
-"""从 outbox 报告长图顶部裁出 README 预览图（固定高度，避免 README 过长）。"""
+"""生成 README 用的改动对比预览图：截到首个 .section-card（大模板卡片）底部。
+
+诊断 / 岗位匹配报告在 README 直接用原图，不生成预览裁切。
+"""
 from __future__ import annotations
 
 import argparse
+import re
+import sys
+import tempfile
 from pathlib import Path
 
-import fitz
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from lib_paths import OUTBOX_DIR, ROOT
+from render_html_capture import html_to_png
 
 
-def crop_top(src: Path, dest: Path, max_h: int) -> None:
-    pix = fitz.Pixmap(str(src))
-    if pix.alpha:
-        pix = fitz.Pixmap(fitz.csRGB, pix)
-    h = min(max_h, pix.height)
-    if h < pix.height:
-        out = fitz.Pixmap(fitz.csRGB, fitz.IRect(0, 0, pix.width, h), 0)
-        out.copy(pix, fitz.IRect(0, 0, pix.width, h))
-    else:
-        out = pix
-    dest.parent.mkdir(parents=True, exist_ok=True)
-    out.save(str(dest))
-    print(f"[ok] {src.name} {pix.width}x{pix.height} → {dest.name} {out.width}x{out.height}")
+def trim_to_first_section_card(html: str) -> str:
+    """保留页头 + 首个改动大卡片，去掉后续长内容。"""
+    m = re.search(
+        r"(.*?<div class=\"content\">\s*)"
+        r"(<section class=\"section-card\">.*?</section>)",
+        html,
+        flags=re.DOTALL,
+    )
+    if not m:
+        raise ValueError("未找到 .content / 首个 .section-card，无法裁切预览")
+    return m.group(1) + m.group(2) + "\n  </div>\n</body>\n</html>\n"
+
+
+def make_diff_preview(stem: str) -> Path | None:
+    src_html = OUTBOX_DIR / f"{stem}_diff.html"
+    dest = OUTBOX_DIR / f"{stem}_diff_preview.png"
+    if not src_html.is_file():
+        print(f"[skip] 缺少 {src_html.relative_to(ROOT)}")
+        return None
+    trimmed = trim_to_first_section_card(src_html.read_text(encoding="utf-8"))
+    with tempfile.TemporaryDirectory(prefix="ai-resume-readme-preview-") as td:
+        tmp = Path(td) / "preview.html"
+        tmp.write_text(trimmed, encoding="utf-8")
+        ok = html_to_png(tmp, dest)
+    if not ok:
+        print(f"[warn] 预览截图失败：{dest.name}")
+        return None
+    print(f"[ok] README 对比预览 → {dest.relative_to(ROOT)}")
+    return dest
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description="裁剪 README 示例预览图")
+    ap = argparse.ArgumentParser(description="生成 README 改动对比预览图（截到首个大卡片）")
     ap.add_argument("--stem", default="张三")
-    ap.add_argument("--max-height", type=int, default=960, help="预览图最大高度（px）")
     args = ap.parse_args()
-    stem = args.stem
-    names = [
-        f"{stem}_review_report.png",
-        f"{stem}_diff.png",
-        f"{stem}_jd_report.png",
-    ]
-    for name in names:
-        src = OUTBOX_DIR / name
-        if not src.is_file():
-            print(f"[skip] 缺少 {src.relative_to(ROOT)}")
-            continue
-        dest = OUTBOX_DIR / f"{src.stem}_preview.png"
-        crop_top(src, dest, args.max_height)
+    make_diff_preview(args.stem)
 
 
 if __name__ == "__main__":

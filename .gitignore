@@ -20,9 +20,7 @@ outbox/*
 !outbox/张三_jd_report.html
 !outbox/张三_review_report.png
 !outbox/张三_review_report.html
-!outbox/张三_review_report_preview.png
 !outbox/张三_diff_preview.png
-!outbox/张三_jd_report_preview.png
 jsons/*
 !jsons/.gitkeep
 *.docx
