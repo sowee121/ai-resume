@@ -35,6 +35,7 @@
 | 提示词 | `prompts/*.txt` | 改写口径、评分尺子、Diff 大纲、JD 匹配 |
 | 管道 | `scripts/*.py` | 抽段、合并、回写、渲染 PNG、验收 |
 | 模板 | `templates/*.html` | 报告视觉（Chrome 截图成 PNG） |
+| 封面资产 | `cover/` | 商品主图：HTML → Chrome 截图成 PNG（仅本地生成，已 gitignore） |
 
 **模型不直接改 docx。** 模型只产出结构化 JSON；由脚本把改写安全写回原稿样式。
 
@@ -232,7 +233,7 @@ python scripts/parse_inbox_config.py --stem "张三"
 
 无 Chrome 时脚本会提示：用浏览器打开上述 HTML 自行截长图。
 
-**截图倍数：** 版式宽 750px，默认输出 **2 倍图（1500px 宽）**，适配高清屏与平台二次压缩。需要更清晰可临时提高：
+**截图倍数：** 版式宽 750px（屏幕 HTML 用 px，垂直间距偏紧凑）。导出 PNG 时 `@media print` 放大字号约 **1.4×**（间距不跟着拉高），便于手机全宽看图。默认输出 **2 倍图（1500px 宽）**，适配高清屏与平台二次压缩。需要更清晰可临时提高：
 
 ```bash
 AI_RESUME_CAPTURE_ZOOM=3 python scripts/render_review_report.py -i "jsons/张三_review_report.json"
@@ -339,6 +340,7 @@ python scripts/verify_outbox.py --stem "张三"
 - **优先 Word（.docx）**；PDF 抽段/回写仅尽力而为，复杂版式可能偏差  
 - PNG 依赖本机 Chrome；截图使用 `--use-mock-keychain`（不改 HOME，避免钥匙串弹窗）；无 Chrome 时仅 HTML  
 - 截图默认 2 倍图（1500px 宽），可用 `AI_RESUME_CAPTURE_ZOOM` 调整；超长页面会自动回退倍数  
+- 报告 HTML 固定 750px；导出 PNG 经 print 放大字号，便于手机看图  
 - 本仓库**不负责换模板/重排版**；需要换模板请另寻工具  
 - 开源仓库勿提交含隐私的真实简历（已 ignore 个人 `inbox` 文件、`outbox/*`、`jsons/*`）
 

@@ -21,6 +21,7 @@ outbox/*
 !outbox/张三_review_report.png
 !outbox/张三_review_report.html
 !outbox/张三_diff_preview.png
+cover/
 jsons/*
 !jsons/.gitkeep
 *.docx

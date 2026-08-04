@@ -308,7 +308,7 @@ def build_html(
     tpl = TEMPLATE.read_text(encoding="utf-8")
     source_name = (source_filename or "").strip() or f"resume.{source_type}"
     meta = (
-        f"{source_name} · 共优化 {len(changed)} 处重点表述"
+        f"{source_name} · 共 {len(changed)} 处改动"
         f" · {len(tree)} 个模块"
     )
     pdf_note = ""

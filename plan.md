@@ -183,6 +183,7 @@ Skill 权威步骤：[`.cursor/skills/resume-optimize/SKILL.md`](.cursor/skills/
 | 模型入口 | Cursor Agent | 无需另配 API Key 即可开箱 |
 | 报告形态 | PNG 长图 | 社交软件可直接预览 |
 | 渲染 | HTML + Chrome headless | CSS 能力完整 |
+| 报告可读性 | 屏幕 750px/px；print 字号约 1.4× 出 PNG | 调样式不乱；手机看图更清晰 |
 | 截图倍数 | 默认 2 倍（1500px 宽） | 抗平台二次压缩；再高则文件过大 |
 | 配置 | 单文件 `<stem>.md` | 降低配置成本 |
 | 通用 vs JD | 互斥 | 一次只交一套，避免困惑 |
@@ -198,27 +199,17 @@ Skill 权威步骤：[`.cursor/skills/resume-optimize/SKILL.md`](.cursor/skills/
 
 1. **脚手架与入口** — 抽段回写、Skill、六维、触发语  
 2. **输入输出约定** — md 配置、互斥产出、验收与文档同步规则  
-3. **报告渲染链路** — JSON→HTML→PNG；diff/jd/review 统一截图（默认 2 倍图）  
-4. **Diff 体验** — GitHub 风格、模型大纲、note、顶部评分卡  
+3. **报告渲染链路** — JSON→HTML→PNG；diff/jd/review 统一截图；真实 CSS 像素倍数（默认 2× / 1500px 宽，`AI_RESUME_CAPTURE_ZOOM` 可覆盖，超长回退）  
+4. **Diff 体验** — GitHub 风格、模型大纲、note、顶部评分卡；页头 meta「共 N 处改动」  
 5. **改写与评分** — 分档、完美简历标准、不夸大不编造、评分展示分工  
 6. **质量与防串条** — verify_content、merge_replacements  
-7. **报告 UI 与文案** — 页头/卡片/副标题文案定稿  
-8. **JD 匹配口径** — 全文含技术栈；技能回填只取主流 JD 常见词  
-9. **产出目录与项目定型** — jsons/、中文简历文件名、开源、项目名「AI 简历」；`install.sh` / `install.bat`+`install.ps1` 一键装依赖  
-10. **技能回填过滤冷门技术** — 项目栈不一律灌进专业技能；模型按热门前端 JD 判断是否回填，冷门库留在项目技术栈
-11. **通用文案原则沉淀** — 从个人改简历实践中精选可复用通则写入 prompts（背景/职责分工、「所以呢」、起句勿同质、可感知结果、优势写事实）；诊断补证据/红旗意识；非整包移植个人模板  
-12. **六维开关并入配置模板** — 删除 `optimization_defaults.yaml`；默认全开写入 `_template.md`「六维优化」段，由 `parse_inbox_config.py` 输出 `dimensions`  
-13. **官方示例张三** — `inbox/张三.docx` + mock JD 的 `张三.md`；走 JD 定制分支；`outbox` 定制版 / diff_jd / jd_report / review 入库
-14. **张三示例全文推倒重写** — 技能/任职/项目/优势全部新写，仅保留母版版式与行数槽位
-15. **云工单单端 + 学知堂 Electron** — 云工单固定 Web 一端；学知堂 Electron 桌面端
-16. **清理示例生成脚本** — 删除一次性 `build_sample_zhangsan.py`
-17. **截图隔离兜底** — 仍用本机 Chrome 自动出 PNG；`--use-mock-keychain` + crash-dumps（不改 HOME，避免钥匙串弹窗）
-18. **张三示例切 JD 分支** — md 写入 mock 资深前端 JD；产出定制版与岗位匹配报告
-19. **张三示例双套并存** — 再补通用优化版；`verify_outbox` 在两套终稿均完整时放宽互斥，便于官方示例对比
-20. **README 示例图** — 诊断 / 改动对比 / 岗位匹配三图并列；页头统一「简历改动对比」
-21. **禁钥匙串弹窗** — 去掉假 HOME；加 `--use-mock-keychain` / `--password-store=basic`
-22. **README 预览截断** — 诊断/岗位匹配用原图；改动对比预览截到首个 `.section-card`（含至少第一处改动）
-23. **截图改真多倍图** — 原 `scale=1.5` 作用于 PDF 点（已含 0.75 缩放），实际仅 1.125 倍、845px 宽，上传平台二次压缩后发虚；改为按 CSS 像素的真实倍数 `zoom`（默认 2 倍 / 1500px 宽），支持 `AI_RESUME_CAPTURE_ZOOM` 覆盖，超长页面自动回退倍数
+7. **报告版式定型** — 固定 750px/px；flex/grid + gap；垂直紧凑；`@media print` 字号约 1.4×（仅 PNG）；曾试 rem/移动端动态根字号后撤回  
+8. **JD 匹配口径** — 全文含技术栈；技能回填只取主流 JD 常见词；冷门库留在项目技术栈  
+9. **产出目录与项目定型** — jsons/、中文简历文件名、开源、项目名「AI 简历」；`install.sh` / `install.bat`+`install.ps1`  
+10. **通用文案原则与六维配置** — prompts 通则沉淀；六维开关并入 `_template.md`，去掉独立 defaults yaml  
+11. **官方示例张三** — 虚构履历全文重写；通用优化版 + JD 定制版双套并存；README 三图并列与 diff 预览截断  
+12. **截图 Chrome 隔离** — 本机 Chrome 出 PNG；`--use-mock-keychain` + crash-dumps（不改 HOME，避免钥匙串弹窗）  
+13. **封面资产隔离** — 商品主图 HTML/脚本放入 `cover/`（gitignore），与主流程报告模板分离  
 ---
 
 ## 八、已知问题与后续方向
@@ -249,6 +240,7 @@ AI Resume/
   scripts/               # 管道与验收
   prompts/               # 提示词（默认前端）
   templates/             # 报告 HTML + favicon
+  cover/                 # 商品主图（本地，gitignore）
   .cursor/skills/        # resume-optimize、resume
   .cursor/rules/         # sync-readme.mdc
   install.sh             # macOS/Linux 一键安装

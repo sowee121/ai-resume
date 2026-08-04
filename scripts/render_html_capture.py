@@ -23,6 +23,8 @@ PAGE_WIDTH_CSS = 750
 PT_PER_CSS_PX = 0.75
 # 默认输出倍数：2 倍图（1500px 宽），兼顾清晰度与文件体积
 DEFAULT_ZOOM = 2.0
+# 报告 @media print 字号约 1.4×，高度估算乘此系数
+PRINT_TYPE_SCALE = 1.4
 # 超长图保护：避免 pixmap 占用过高内存 / 生成平台无法处理的巨图
 MAX_LONG_EDGE_PX = 32000
 MAX_TOTAL_PX = 80_000_000
@@ -66,29 +68,31 @@ def favicon_link_html(root: Path | None = None, *, name: str = "favicon.svg") ->
 
 
 def estimate_page_height(html: str) -> int:
-    """Estimate required single-page height in CSS px (upper bound, later cropped)."""
+    """Estimate required single-page height in CSS px (upper bound, later cropped).
+
+    模板 @media print 会放大字号，高度按 PRINT_TYPE_SCALE 上调。
+    """
     n_pair = html.count('class="pair"')
     n_section = html.count('class="section-card"')
     if n_pair:
         note_bonus = html.count('class="pair-note"') * 32
         score_bonus = 140 if "score-strip" in html else 0
-        return min(
-            50000,
-            max(2200, 320 + score_bonus + n_section * 72 + n_pair * 168 + note_bonus),
-        )
+        base = max(2200, 320 + score_bonus + n_section * 72 + n_pair * 168 + note_bonus)
+        return min(50000, int(base * PRINT_TYPE_SCALE))
 
     n_hunk = html.count('class="hunk"')
     if n_hunk:
-        return min(50000, max(1600, 200 + n_hunk * 130))
+        return min(50000, int(max(1600, 200 + n_hunk * 130) * PRINT_TYPE_SCALE))
 
     n_diff = html.count('class="diff-item"')
     if n_diff:
-        return min(60000, max(2400, 360 + n_diff * 300))
+        return min(60000, int(max(2400, 360 + n_diff * 300) * PRINT_TYPE_SCALE))
 
     n_dim = html.count('class="dim-item"')
     n_card = html.count('class="card ')
     n_li = len(re.findall(r"<li[\s>]", html))
-    return min(16000, max(2600, 1100 + n_card * 210 + n_dim * 105 + n_li * 46))
+    base = max(2600, 1100 + n_card * 210 + n_dim * 105 + n_li * 46)
+    return min(16000, int(base * PRINT_TYPE_SCALE))
 
 
 def resolve_zoom(zoom: float | None = None) -> float:
